@@ -12,16 +12,16 @@ furnished to do so, subject to the following conditions:
 1. (Required) Attribution:
 Any use of the Software (modified or not), **must** include clear attribution in:
 
-- The **source repository** (if one exists), typically in a `README`, `LICENSE`, or similar visible location, and
-- The **final distributed product** (if applicable), such as in release notes, about pages, splash screens, or credits.
+- The source repository (if one exists), typically in a `README`, `LICENSE`, or similar visible location, and
+- The final distributed product (if applicable), such as in release notes, about pages, splash screens, or credits.
 
 Attribution must mention:
-- The name "**HIDra**".
-- "**Jacob Pratley**" as the author of "**HIDra**".
+- The name "HIDra".
+- "Jacob Pratley" as the author of "HIDra".
 
 2. (Optional but Much Appreciated) Visual Credit:
 If used in a graphical application, it would make me very happy (but not required)
-that the "**Powered by HIDra**" logo be displayed in splash screens, boot sequences, or end credits.
+that the "Powered by HIDra" logo be displayed in splash screens, boot sequences, or end credits.
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
