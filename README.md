@@ -1,5 +1,5 @@
-# HIDra (Pronounced Hydra)
-A simple C++ Human Interface Device input system for real-time software.
+# HIDra (Pronounced Hydra) 
+A simple C++ Human Interface Device input system for real-time software. <img src="https://spratley.github.io/Images/HIDra_Logo.png" alt="HIDra logo" width="300" align=right>
 
 I can't guarantee this is good- I'm not an input system programmer after all.
 
