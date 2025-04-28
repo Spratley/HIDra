@@ -1,5 +1,5 @@
 #include "HIDraGamepad_Windows.h"
-
+#if HIDra_Windows && HIDra_Gamepad
 #include "HIDraGamepadDecoder_Windows.h"
 
 #include <windows.h>
@@ -174,3 +174,4 @@ namespace HIDra
         return m_openDeviceHandle != INVALID_HANDLE_VALUE;
     }
 }
+#endif // HIDra_Windows && HIDra_Gamepad

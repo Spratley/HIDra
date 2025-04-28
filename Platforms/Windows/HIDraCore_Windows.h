@@ -19,18 +19,22 @@ namespace HIDra
     class PlatformCore_Windows
     {
     public:
+#if HIDra_Gamepad
         void ProcessGamepadInput(RawInputData rawInput, GamepadManager& gamepadManager);
+#endif // HIDra_Gamepad
 
     protected:
         bool PlatformInit(PlatformCoreInitData const& initData, GamepadManager& gamepadManager);
 
     private:
         bool SubscribeToInputMessages();
+
+#if HIDra_Gamepad
         bool SubscribeToDeviceChanges(WindowHandle hWnd);
 
-        // Windows gamepad
         bool GatherGamepads(GamepadManager& gamepadManager);
         bool IsDeviceGamepad(DeviceHandle device) const;
+#endif // HIDra_Gamepad
     };
     using PlatformCore = PlatformCore_Windows;
 }

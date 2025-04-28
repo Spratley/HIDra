@@ -1,24 +1,16 @@
 #pragma once
 
+#include "HIDraDefs.h"
 #include "HIDraTypes.h"
 
 namespace HIDra
 {
-    // General
-    enum GamepadAxisID : HIDra_UInt8
-    {
-          AID_STICK_R
-        , AID_STICK_L
-        
-        , AID_TRIGGER_R
-        , AID_TRIGGER_L
-    };
-
     // Keyboard
 
     // Mouse
 
     // Gamepad
+#if HIDra_Gamepad
     enum GamepadButtonFlags : HIDra_UInt16
     {
           BID_NONE = 0
@@ -42,5 +34,15 @@ namespace HIDra
         , BID_PLUS = 1 << 12
         , BID_MINUS = 1 << 13
     };
+
+    enum GamepadAxisID : HIDra_UInt8
+    {
+        AID_STICK_R
+        , AID_STICK_L
+
+        , AID_TRIGGER_R
+        , AID_TRIGGER_L
+    };
+#endif // HIDra_Gamepad
 }
 

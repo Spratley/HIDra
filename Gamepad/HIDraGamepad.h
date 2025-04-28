@@ -1,14 +1,15 @@
 #pragma once
 
 #include "../HIDraEnums.h"
-#include "../HIDraTypes.h"
 #include "HIDraHIDDatabase.h"
 
+#if HIDra_Gamepad
 namespace HIDra
 {
     struct GamepadInputData
     {
     public:
+        GamepadButtonFlags GetFlags() const { return m_flags; }
         bool GetFlag(GamepadButtonFlags flag) const { return (m_flags & flag) != 0; }
         bool WasFlagSetThisFrame(GamepadButtonFlags flag) const { return (m_flagsSetThisFrame & flag) != 0; }
 
@@ -18,13 +19,6 @@ namespace HIDra
         float GetTriggerL() const { return m_triggerL; }
         float GetTriggerR() const { return m_triggerR; }
 
-        inline void Flush()
-        {
-            m_flagsSetThisFrame = BID_NONE;
-            m_triggerRChangedThisFrame = false;
-            m_triggerLChangedThisFrame = false;
-        }
-
         void SetFlags(GamepadButtonFlags flags);
 
         void SetStickLX(float valueX) { m_stickL.m_x = valueX; }
@@ -32,8 +26,18 @@ namespace HIDra
         void SetStickRX(float valueX) { m_stickR.m_x = valueX; }
         void SetStickRY(float valueY) { m_stickR.m_y = valueY; }
 
+        void SetStickL(Vec2f const& value) { m_stickL = value; }
+        void SetStickR(Vec2f const& value) { m_stickR = value; }
+
         void SetTriggerL(float value);
         void SetTriggerR(float value);
+
+        inline void Flush()
+        {
+            m_flagsSetThisFrame = BID_NONE;
+            m_triggerRChangedThisFrame = false;
+            m_triggerLChangedThisFrame = false;
+        }
 
     private:
         GamepadButtonFlags m_flags = BID_NONE;
@@ -57,7 +61,7 @@ namespace HIDra
         GamepadBase(GamepadBase const&) = delete; // No! No copy >:(
         GamepadBase(GamepadBase&& otherGamepad) noexcept;
         
-        inline void Flush() { m_inputData.Flush(); }
+        virtual inline void Flush() { m_inputData.Flush(); }
 
         inline HIDra_UInt8 GetPredictedAxisCount() const;
 
@@ -85,3 +89,4 @@ namespace HIDra
         return 0;
     }
 }
+#endif // HIDra_Gamepad

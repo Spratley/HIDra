@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#if HIDra_Windows
+#if HIDra_Windows && HIDra_Gamepad
 namespace HIDra
 {
     using DeviceHandle = void*;
@@ -76,4 +76,4 @@ namespace HIDra
 
     using Gamepad = Gamepad_Windows;
 }
-#endif // HIDra_Windows
+#endif // HIDra_Windows && HIDra_Gamepad

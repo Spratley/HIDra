@@ -1,5 +1,6 @@
+#include "../../../HIDraDefs.h"
 #include "HIDraGamepadDecoder_Windows.h"
-
+#if HIDra_Windows && HIDra_Gamepad
 #include "HIDraGamepad_Windows.h"
 
 #define MAP_BUTTON_ID_FLAG(ButtonID, ButtonFlag) case ButtonID: heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | ButtonFlag); continue
@@ -126,3 +127,4 @@ namespace HIDra
         outInputData.SetFlags(heldButtonFlags);
     }
 }
+#endif // HIDra_Windows && HIDra_Gamepad

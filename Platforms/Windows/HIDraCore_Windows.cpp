@@ -21,6 +21,9 @@
 #define PRINT_ERROR(ErrorMessageFmt, ...)
 #endif // HIDra_Debug
 
+// Disable unreferenced parameter warnings
+#pragma warning (disable : 4100)
+
 // Hijack the windows message handler to filter input messages through HIDra
 WNDPROC defaultWindowProcedure;
 LRESULT CALLBACK WindowsRawInputMessageHandler(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
@@ -42,12 +45,19 @@ LRESULT CALLBACK WindowsRawInputMessageHandler(HWND windowHandle, UINT message, 
         {
             RAWINPUT* rawData = (RAWINPUT*)messageBuffer;
             
-            HIDra::Core& core = HIDra::Core::GetInstance();
 
-            if (rawData->header.dwType == RIM_TYPEHID)
+            if (rawData->header.dwType == RIM_TYPEKEYBOARD)
             {
+                // TODO: Keyboard Input
+            }
+#if HIDra_Gamepad
+            else if (rawData->header.dwType == RIM_TYPEHID)
+            {
+                // Moved here temporarily to avoid C4189 when gamepads are disabled
+                HIDra::Core& core = HIDra::Core::GetInstance();
                 core.ProcessGamepadInput(rawData, core.GetGamepadManager());
             }
+#endif // HIDra_Gamepad
         }
         else
         {
@@ -107,7 +117,8 @@ namespace HIDra
             return std::wstring(serialNumberBuffer);
         }
 
-        Gamepad& GetGamepadByHandle(DeviceHandle device, GamepadManager& gamepadManager)
+#if HIDra_Gamepad
+        Gamepad* GetGamepadByHandle(DeviceHandle device, GamepadManager& gamepadManager)
         {
             int foundGamepadID = gamepadManager.FindGamepad([&device](Gamepad& gamepad)
                 {
@@ -116,7 +127,7 @@ namespace HIDra
 
             if (foundGamepadID != -1)
             {
-                return gamepadManager.GetGamepad(static_cast<GamepadID>(foundGamepadID));
+                return gamepadManager.GetConnectedGamepad(static_cast<GamepadID>(foundGamepadID));
             }
 
             // Not found! Let's compare serial numbers...
@@ -128,14 +139,14 @@ namespace HIDra
 
             if (foundGamepadID != -1)
             {
-                Gamepad& gamepad = gamepadManager.GetGamepad(static_cast<GamepadID>(foundGamepadID));
-                gamepad.SetLastKnownDeviceHandle(device);
+                Gamepad* gamepad = gamepadManager.GetConnectedGamepad(static_cast<GamepadID>(foundGamepadID));
+                gamepad->SetLastKnownDeviceHandle(device);
                 return gamepad;
             }
 
-            // Couldn't find a matching gamepad! Somehow a message got sent by an unknown gamepad?
-            return gamepadManager.GetGamepad(GenericGamepad);
+            return nullptr;
         }
+#endif // HIDra_Gamepad
     }
 
     bool PlatformCore_Windows::PlatformInit(PlatformCoreInitData const& initData, GamepadManager& gamepadManager)
@@ -148,14 +159,20 @@ namespace HIDra
             return false;
         }
 
+#if HIDra_Gamepad
         if (!SubscribeToDeviceChanges(hWnd))
         {
             return false;
         }
 
         return GatherGamepads(gamepadManager);
+#else
+        
+        return true;
+#endif // HIDra_Gamepad
     }
 
+#if HIDra_Gamepad
     void PlatformCore_Windows::ProcessGamepadInput(RawInputData rawInput, GamepadManager& gamepadManager)
     {
         RAWINPUT* rawInputData = static_cast<RAWINPUT*>(rawInput);
@@ -165,8 +182,15 @@ namespace HIDra
             return;
         }
 
-        Gamepad& gamepad = Local::GetGamepadByHandle(rawInputData->header.hDevice, gamepadManager);
-        
+        Gamepad* const gamepad = Local::GetGamepadByHandle(rawInputData->header.hDevice, gamepadManager);
+        if (!gamepad)
+        {
+            // TODO: Queue unknown handles for registry...
+            // It's probably better to do that via WM_DEVICECHANGE than this error, but once that's in ideally this error should never trigger
+            PRINT_ERROR("Failed to find a gamepad corresponding with the input report handle!");
+            return;
+        }
+
         BYTE* report = rawInputData->data.hid.bRawData;
         HIDra_UInt32 reportSize = rawInputData->data.hid.dwCount * rawInputData->data.hid.dwSizeHid;
 
@@ -174,8 +198,8 @@ namespace HIDra
         USAGE usages[64];
         ULONG usageLength = 64;
 
-        PHIDP_BUTTON_CAPS buttonCapabilities = static_cast<PHIDP_BUTTON_CAPS>(gamepad.GetButtonCapabilities());
-        PHIDP_PREPARSED_DATA preparsedData = static_cast<PHIDP_PREPARSED_DATA>(gamepad.GetPreparsedData());
+        PHIDP_BUTTON_CAPS buttonCapabilities = static_cast<PHIDP_BUTTON_CAPS>(gamepad->GetButtonCapabilities());
+        PHIDP_PREPARSED_DATA preparsedData = static_cast<PHIDP_PREPARSED_DATA>(gamepad->GetPreparsedData());
 
         NTSTATUS buttonResult = HidP_GetUsages(HidP_Input, buttonCapabilities[0].UsagePage, 0, usages, &usageLength, preparsedData, (PCHAR)report, reportSize);
         if (buttonResult != HIDP_STATUS_SUCCESS)
@@ -187,13 +211,13 @@ namespace HIDra
         // Build Gamepad Report
         GamepadReport_Windows inputReport;
         inputReport.m_heldButtonIDs.resize(usageLength);
-        inputReport.m_axes.reserve(gamepad.GetPredictedAxisCount());
+        inputReport.m_axes.reserve(gamepad->GetPredictedAxisCount());
 
         memcpy(inputReport.m_heldButtonIDs.data(), usages, sizeof(HIDra_UInt16) * usageLength);
 
         // Parse Axis Values
-        const HIDra_UInt32 valueCapabilitiesCount = gamepad.GetValueCapabilitiesCount();
-        PHIDP_VALUE_CAPS valueCapabilities = static_cast<PHIDP_VALUE_CAPS>(gamepad.GetValueCapabilities());
+        const HIDra_UInt32 valueCapabilitiesCount = gamepad->GetValueCapabilitiesCount();
+        PHIDP_VALUE_CAPS valueCapabilities = static_cast<PHIDP_VALUE_CAPS>(gamepad->GetValueCapabilities());
 
         for (HIDra_UInt32 i = 0; i < valueCapabilitiesCount; i++)
         {
@@ -206,9 +230,17 @@ namespace HIDra
             inputReport.m_axes.push_back(GamepadReport_Windows::Axis(valueCapabilities[i].NotRange.Usage, static_cast<HIDra_UInt16>(value)));
         }
 
-        gamepad.ReportInput(inputReport);
+        gamepad->ReportInput(inputReport);
+
+#if HIDra_GP_Generic
+        // Send report to generic gamepad
+        GamepadInputData const& gamepadInput = gamepad->GetInputData();
+        gamepadManager.GetGenericGamepad().ReportInput(gamepadInput);
+#endif // HIDra_GP_Generic
+
         return;
     }
+#endif // HIDra_Gamepad
 
     bool PlatformCore_Windows::SubscribeToInputMessages()
     {
@@ -248,7 +280,8 @@ namespace HIDra
 
         return true;
     }
-    
+
+#if HIDra_Gamepad
     // TODO: Check if this is needed when running in only generic gamepad mode!
     // I don't think so
     bool PlatformCore_Windows::SubscribeToDeviceChanges(WindowHandle hWnd)
@@ -361,6 +394,7 @@ namespace HIDra
         delete[] deviceInterfaceList;
         return gamepads.size() > 0;
     }
+#endif // HIDra_Gamepad
 }
 #undef PRINT_ERROR
 #undef PRINT_WINDOWS_ERROR

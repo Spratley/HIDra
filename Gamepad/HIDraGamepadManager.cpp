@@ -1,55 +1,73 @@
 #include "HIDraGamepadManager.h"
 
-#include "../HIDraDefs.h"
+#if HIDra_Gamepad
 
-#include <iostream>
+#if HIDra_Debug
+#define PRINT_ERROR(message) printf(message "\n")
+#else
+#define PRINT_ERROR(message)
+#endif // HIDra_Debug
 
 namespace HIDra
 {
-    GamepadManager::GamepadManager()
-        : m_genericGamepad()
-    {}
-
     void GamepadManager::Flush()
     {
+#if HIDra_GP_Generic
         m_genericGamepad.Flush();
+#endif // HIDra_GP_Generic
+
         for (Gamepad& gamepad : m_connectedGamepads)
         {
             gamepad.Flush();
         }
     }
 
-    Gamepad const& GamepadManager::GetGamepad(GamepadID gamepadID) const
+    // Gross macros to sort out which gamepads we should grab
+    GamepadBase const* GamepadManager::GetGamepad(GamepadID gamepadID) const
     {
-        if (gamepadID == GenericGamepad)
+#if HIDra_GP_Generic
+        if (gamepadID == GenericGamepadID)
         {
-            return m_genericGamepad;
+            return &m_genericGamepad;
         }
+#endif // HIDra_GP_Generic
 
-#if HIDra_Debug
-        if (gamepadID >= m_connectedGamepads.size())
+#if HIDra_GP_Multiple
+        if (GamepadBase const* connectedGamepad = GetConnectedGamepad(gamepadID))
         {
-            printf("Attempting to access a gamepad out of bounds!");
-            return m_genericGamepad;
+            return connectedGamepad;
         }
-#endif // HIDra_Debug
-        return m_connectedGamepads[gamepadID];
+#endif // HIDra_GP_Multiple
+
+#if HIDra_GP_Generic
+        return &m_genericGamepad;
+#else
+        return nullptr;
+#endif // HIDra_GP_Generic
     }
 
-    Gamepad& GamepadManager::GetGamepad(GamepadID gamepadID)
+    Gamepad const* GamepadManager::GetConnectedGamepad(GamepadID gamepadID) const
     {
-        if (gamepadID == GenericGamepad)
+#if HIDra_GP_Generic
+        if (gamepadID == GenericGamepadID)
         {
-            return m_genericGamepad;
+            PRINT_ERROR("Attempting to access generic gamepad with GetConnectedGamepad(). Please use GetGenericGamepad() instead.");
+            return nullptr;
         }
+#endif // HIDra_GP_Generic
 
-#if HIDra_Debug
         if (gamepadID >= m_connectedGamepads.size())
         {
-            printf("Attempting to access a gamepad out of bounds!");
-            return m_genericGamepad;
+            PRINT_ERROR("Attempting to access a gamepad out of bounds!");
+            return nullptr;
         }
-#endif // HIDra_Debug
-        return m_connectedGamepads[gamepadID];
+
+        return &m_connectedGamepads[gamepadID];
+    }
+
+    Gamepad* GamepadManager::GetConnectedGamepad(GamepadID gamepadID)
+    {
+        return const_cast<Gamepad*>(const_cast<GamepadManager const*>(this)->GetConnectedGamepad(gamepadID));
     }
 }
+#endif // HIDra_Gamepad

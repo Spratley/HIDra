@@ -1,5 +1,6 @@
 #pragma once
 
+#if HIDra_Gamepad
 namespace HIDra
 {
     // Nintendo
@@ -12,3 +13,4 @@ namespace HIDra
     const Vendor VID_SONY = 0x054C;
     const Product PID_SONY_DUALSHOCK_4 = 0x09CC;
 }
+#endif // HIDra_Gamepad

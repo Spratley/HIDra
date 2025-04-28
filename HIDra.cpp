@@ -15,18 +15,22 @@ namespace HIDra
 
     void Core::Flush()
     {
+#if HIDra_Gamepad
         m_gamepadManager.Flush();
+#endif // HIDra_Gamepad
     }
 
+#if HIDra_Gamepad
     float Core::GetAxis(GamepadAxisID axis, GamepadID gamepadID)
     {
-        Gamepad const& gamepad = m_gamepadManager.GetGamepad(gamepadID);
+        GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
+
         switch (axis)
         {
         case GamepadAxisID::AID_TRIGGER_L:
-            return gamepad.GetInputData().GetTriggerL();
+            return gamepad->GetInputData().GetTriggerL();
         case GamepadAxisID::AID_TRIGGER_R:
-            return gamepad.GetInputData().GetTriggerR();
+            return gamepad->GetInputData().GetTriggerR();
         }
 #if HIDra_Debug
         printf("Attempting to read a non-1D axis with GetAxis()!");
@@ -36,13 +40,13 @@ namespace HIDra
 
     Vec2f Core::GetAxis2D(GamepadAxisID axis, GamepadID gamepadID)
     {
-        Gamepad const& gamepad = m_gamepadManager.GetGamepad(gamepadID);
+        GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
         switch (axis)
         {
         case GamepadAxisID::AID_STICK_L:
-            return gamepad.GetInputData().GetStickL();
+            return gamepad->GetInputData().GetStickL();
         case GamepadAxisID::AID_STICK_R:
-            return gamepad.GetInputData().GetStickR();
+            return gamepad->GetInputData().GetStickR();
         }
 #if HIDra_Debug
         printf("Attempting to read a non-2D axis with GetAxis2D()!");
@@ -52,22 +56,23 @@ namespace HIDra
 
     bool Core::GetButton(GamepadButtonFlags button, GamepadID gamepadID)
     {
-        Gamepad const& gamepad = m_gamepadManager.GetGamepad(gamepadID);
-        GamepadInputData const& inputData = gamepad.GetInputData();
+        GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
+        GamepadInputData const& inputData = gamepad->GetInputData();
         return inputData.GetFlag(button);
     }
     
     bool Core::GetButtonDown(GamepadButtonFlags button, GamepadID gamepadID)
     {
-        Gamepad const& gamepad = m_gamepadManager.GetGamepad(gamepadID);
-        GamepadInputData const& inputData = gamepad.GetInputData();
+        GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
+        GamepadInputData const& inputData = gamepad->GetInputData();
         return inputData.GetFlag(button) && inputData.WasFlagSetThisFrame(button);
     }
     
     bool Core::GetButtonUp(GamepadButtonFlags button, GamepadID gamepadID)
     {
-        Gamepad const& gamepad = m_gamepadManager.GetGamepad(gamepadID);
-        GamepadInputData const& inputData = gamepad.GetInputData();
+        GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
+        GamepadInputData const& inputData = gamepad->GetInputData();
         return (!inputData.GetFlag(button)) && inputData.WasFlagSetThisFrame(button);
     }
+#endif // HIDra_Gamepad
 }

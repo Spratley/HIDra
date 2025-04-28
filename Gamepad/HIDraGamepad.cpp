@@ -1,6 +1,5 @@
 #include "HIDraGamepad.h"
-
-#include "../HIDraTypes.h"
+#if HIDra_Gamepad
 #include "HIDraHIDDatabase.h"
 
 namespace HIDra
@@ -33,3 +32,4 @@ namespace HIDra
         , m_product(otherGamepad.m_product)
     {}
 }
+#endif // HIDra_Gamepad
