@@ -25,5 +25,5 @@ Now you're able to poll input from your connected gamepads by calling the variou
 Coming Soon! WM_DEVICECHANGE has not been implemented, and so HIDra can't detect when controllers disconnect and reconnect in order to properly categorize their input.
 
 ## Changelog
-0.0 - Initial Push of HIDra
+0.0 - Initial Push of HIDra\
 0.1 (Apr-27th-2025) - Added generic gamepad polling
