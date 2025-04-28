@@ -24,6 +24,9 @@ Now you're able to poll input from your connected gamepads by calling the variou
 🎮 **HIDra won't recognize gamepads connected after the program launches.**\
 Coming Soon! WM_DEVICECHANGE has not been implemented, and so HIDra can't detect when controllers disconnect and reconnect in order to properly categorize their input.
 
+🎮 **GenericGamepad is unreliable for axis input.**\
+My bad, I didn't think that controllers in the dead zone probably shouldn't be taken into account when averaging the axis inputs. This will be fixed in a minor version soon
+
 ## Changelog
 0.0 - Initial Push of HIDra\
 0.1 (Apr-27th-2025) - Added generic gamepad polling
