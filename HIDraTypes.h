@@ -13,6 +13,8 @@ namespace HIDra
 
     struct Vec2f
     {
+        static const Vec2f s_zero;
+
         Vec2f() = default;
         Vec2f(float x, float y) : m_x(x), m_y(y) {}
 

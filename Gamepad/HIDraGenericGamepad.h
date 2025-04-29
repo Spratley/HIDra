@@ -20,7 +20,12 @@ namespace HIDra
         }
 
     private:
+        void AddAxisInput(float value, GamepadAxisID axis);
+        void AddAxis2DInput(Vec2f value, GamepadAxisID axis);
+
+    private:
         HIDra_UInt32 m_inputReportsThisFrame;
+        HIDra_UInt32 m_axisInputReportsThisFrame[AID_COUNT];
     };
 }
 #endif // HIDra_Gamepad && HIDra_GP_Generic

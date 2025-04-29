@@ -4,6 +4,30 @@
 
 namespace HIDra
 {
+    float GamepadInputData::GetAxis(GamepadAxisID axisID) const
+    {
+        switch (axisID)
+        {
+        case AID_TRIGGER_L:
+            return GetTriggerL();
+        case AID_TRIGGER_R:
+            return GetTriggerR();
+        }
+        return 0.0f;
+    }
+    
+    Vec2f const& GamepadInputData::GetAxis2D(GamepadAxisID axisID) const
+    {
+        switch (axisID)
+        {
+        case AID_STICK_L:
+            return GetStickL();
+        case AID_STICK_R:
+            return GetStickR();
+        }
+        return Vec2f::s_zero;
+    }
+
     void GamepadInputData::SetFlags(GamepadButtonFlags flags)
     {
         m_flagsSetThisFrame = static_cast<GamepadButtonFlags>(m_flags ^ flags);
@@ -12,18 +36,38 @@ namespace HIDra
 
     void GamepadInputData::SetTriggerL(float value)
     {
-        const bool isTriggered = value > 0.5f;
-        const bool wasTriggered = m_triggerL > 0.5f;
-        m_triggerLChangedThisFrame = isTriggered != wasTriggered;
         m_triggerL = value;
     }
     
     void GamepadInputData::SetTriggerR(float value)
     {
-        const bool isTriggered = value > 0.5f;
-        const bool wasTriggered = m_triggerR > 0.5f;
-        m_triggerRChangedThisFrame = isTriggered != wasTriggered;
         m_triggerR = value;
+    }
+
+    void GamepadInputData::SetAxis(GamepadAxisID axisID, float value)
+    {
+        switch (axisID)
+        {
+        case AID_TRIGGER_L:
+            SetTriggerL(value);
+            break;
+        case AID_TRIGGER_R:
+            SetTriggerR(value);
+            break;
+        }
+    }
+
+    void GamepadInputData::SetAxis(GamepadAxisID axisID, Vec2f const& value)
+    {
+        switch (axisID)
+        {
+        case AID_STICK_L:
+            SetStickL(value);
+            break;
+        case AID_STICK_R:
+            SetStickR(value);
+            break;
+        }
     }
 
     GamepadBase::GamepadBase(GamepadBase&& otherGamepad) noexcept

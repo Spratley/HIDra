@@ -37,11 +37,13 @@ namespace HIDra
 
     enum GamepadAxisID : HIDra_UInt8
     {
-        AID_STICK_R
+          AID_STICK_R
         , AID_STICK_L
 
         , AID_TRIGGER_R
         , AID_TRIGGER_L
+
+        , AID_COUNT
     };
 #endif // HIDra_Gamepad
 }

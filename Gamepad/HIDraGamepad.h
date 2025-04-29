@@ -6,6 +6,8 @@
 #if HIDra_Gamepad
 namespace HIDra
 {
+    constexpr float AxisDeadZone = 0.01f;
+
     struct GamepadInputData
     {
     public:
@@ -18,6 +20,9 @@ namespace HIDra
 
         float GetTriggerL() const { return m_triggerL; }
         float GetTriggerR() const { return m_triggerR; }
+
+        float GetAxis(GamepadAxisID axisID) const;
+        Vec2f const& GetAxis2D(GamepadAxisID axisID) const;
 
         void SetFlags(GamepadButtonFlags flags);
 
@@ -32,11 +37,12 @@ namespace HIDra
         void SetTriggerL(float value);
         void SetTriggerR(float value);
 
+        void SetAxis(GamepadAxisID axisID, float value);
+        void SetAxis(GamepadAxisID axisID, Vec2f const& value);
+
         inline void Flush()
         {
             m_flagsSetThisFrame = BID_NONE;
-            m_triggerRChangedThisFrame = false;
-            m_triggerLChangedThisFrame = false;
         }
 
     private:
@@ -48,10 +54,6 @@ namespace HIDra
         
         float m_triggerL = 0.0f;
         float m_triggerR = 0.0f;
-
-        // Passing the 0.5 threshold sets these to true this frame
-        bool m_triggerLChangedThisFrame = false;
-        bool m_triggerRChangedThisFrame = false;
     };
 
     class GamepadBase
