@@ -26,4 +26,5 @@ Coming Soon! WM_DEVICECHANGE has not been implemented, and so HIDra can't detect
 
 ## Changelog
 0.0 - Initial Push of HIDra\
-0.1 (Apr-27th-2025) - Added generic gamepad polling
+0.1 (Apr-27th-2025) - Added generic gamepad polling\
+0.1.1 (Apr-28th-2025) - Minor bugfix\
