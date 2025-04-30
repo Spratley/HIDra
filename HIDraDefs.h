@@ -14,7 +14,7 @@
 
 // -=-= Feature Toggles =-=-
 // Gamepad
-#define HIDra_Gamepad 1
+#define HIDra_Gamepad 0
 
 #if HIDra_Gamepad
     // What gamepad support is needed?
@@ -29,6 +29,16 @@
 #if HIDra_Gamepad && !HIDra_GP_Generic && !HIDra_GP_Multiple
 #error You need at least one kind of gamepad support (facepalm)
 #endif // HIDra_Gamepad && !HIDra_SupportGenericGAmepad && !HIDra_SupportMultipleGampead
+
+// Keyboard
+#define HIDra_Keyboard 1
+
+// Mouse
+#define HIDra_Mouse 0
+
+#if !HIDra_Gamepad && !HIDra_Keyboard
+#error You're using HIDra but nothing is enabled? Bruh
+#endif // !HIDra_Gamepad && !HIDra_Keyboard
 
 // -=-= Debugging =-=-
 #ifdef _DEBUG

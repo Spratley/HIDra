@@ -2,6 +2,10 @@
 #if HIDra_Windows
 #include "../../HIDra.h"
 
+#if HIDra_Keyboard
+#include "Keyboard/HIDraKeyCodeTranslator_Windows.h"
+#endif // HIDra_Keyboard
+
 #include <cstdio>
 
 #include <windows.h>
@@ -44,17 +48,22 @@ LRESULT CALLBACK WindowsRawInputMessageHandler(HWND windowHandle, UINT message, 
         if (expectedSize == GetRawInputData((HRAWINPUT)lParam, RID_INPUT, messageBuffer, &inputMessageSize, sizeof(RAWINPUTHEADER)))
         {
             RAWINPUT* rawData = (RAWINPUT*)messageBuffer;
-            
+            HIDra::Core& core = HIDra::Core::GetInstance();
 
+#if HIDra_Keyboard
             if (rawData->header.dwType == RIM_TYPEKEYBOARD)
             {
-                // TODO: Keyboard Input
+                // TODO: Determine if the pressed shift key is left or right. 
+                // RAWINPUT doesn't differentiate left and right shift with flags like it does for left and right alt
+                // We need to check directly via scancodes, but this setup isn't exactly built around that
+                RAWKEYBOARD const& keyboardData = rawData->data.keyboard;
+                core.ProcessKeystroke(keyboardData.VKey, keyboardData.Flags, core.GetKeyboardManager());
             }
+#endif // HIDra_Keyboard
+
 #if HIDra_Gamepad
-            else if (rawData->header.dwType == RIM_TYPEHID)
+            if (rawData->header.dwType == RIM_TYPEHID)
             {
-                // Moved here temporarily to avoid C4189 when gamepads are disabled
-                HIDra::Core& core = HIDra::Core::GetInstance();
                 core.ProcessGamepadInput(rawData, core.GetGamepadManager());
             }
 #endif // HIDra_Gamepad
@@ -242,34 +251,55 @@ namespace HIDra
     }
 #endif // HIDra_Gamepad
 
+#if HIDra_Keyboard
+    void PlatformCore_Windows::ProcessKeystroke(HIDra_UInt16 virtualKeyCode, HIDra_UInt16 flags, KeyboardManager& keyboardManager)
+    {
+        const bool pressed = (flags & RI_KEY_BREAK) == 0;
+        KeyCode keyCode = GetKeycodeFromWindowsVK(virtualKeyCode, flags);
+        keyboardManager.SetKeyState(keyCode, pressed);
+    }
+#endif // HIDra_Keyboard
+
     bool PlatformCore_Windows::SubscribeToInputMessages()
     {
+        // Calculate how many input devices are needed depending on macro config
+        constexpr HIDra_UInt32 rawInputDeviceCount =
+#if HIDra_Keyboard
+            1 +
+#endif // HIDra_Keyboard
+#if HIDra_Mouse
+            1 +
+#endif // HIDra_Mouse
 #if HIDra_Gamepad
-        constexpr HIDra_UInt32 rawInputDeviceCount = 3;
-#else
-        constexpr HIDra_UInt32 rawInputDeviceCount = 2;
+            1 +
 #endif // HIDra_Gamepad
+            0;
 
         RAWINPUTDEVICE rid[rawInputDeviceCount];
+        HIDra_UInt32 index = 0;
 
-        // Keyboard
-        rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-        rid[0].usUsage = HID_USAGE_GENERIC_KEYBOARD;
-        rid[0].dwFlags = 0;
-        rid[0].hwndTarget = 0;
+#if HIDra_Keyboard
+        rid[index].usUsagePage = HID_USAGE_PAGE_GENERIC;
+        rid[index].usUsage = HID_USAGE_GENERIC_KEYBOARD;
+        rid[index].dwFlags = 0;
+        rid[index].hwndTarget = 0;
+        index++;
+#endif // HIDra_Keyboard
 
-        // Mouse
-        rid[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
-        rid[1].usUsage = HID_USAGE_GENERIC_MOUSE;
-        rid[1].dwFlags = 0;
-        rid[1].hwndTarget = 0;
+#if HIDra_Mouse
+        rid[index].usUsagePage = HID_USAGE_PAGE_GENERIC;
+        rid[index].usUsage = HID_USAGE_GENERIC_MOUSE;
+        rid[index].dwFlags = 0;
+        rid[index].hwndTarget = 0;
+        index++;
+#endif // HIDra_Mouse
 
 #if HIDra_Gamepad
-        // Gamepad
-        rid[2].usUsagePage = HID_USAGE_PAGE_GENERIC;
-        rid[2].usUsage = HID_USAGE_GENERIC_GAMEPAD;
-        rid[2].dwFlags = 0;
-        rid[2].hwndTarget = 0;
+        rid[index].usUsagePage = HID_USAGE_PAGE_GENERIC;
+        rid[index].usUsage = HID_USAGE_GENERIC_GAMEPAD;
+        rid[index].dwFlags = 0;
+        rid[index].hwndTarget = 0;
+        index++;
 #endif // HIDra_Gamepad
         
         if (RegisterRawInputDevices(rid, rawInputDeviceCount, sizeof(rid[0])) == FALSE)

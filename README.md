@@ -3,7 +3,7 @@ A simple C++ Human Interface Device input system for real-time software. <img sr
 
 I can't guarantee this is good- I'm not an input system programmer after all.
 
-HIDra is a WIP, and currently only supports gamepads (No mouse or keyboard).
+HIDra is a WIP, and currently only supports gamepads and keyboard input (No mouse yet).
 
 HIDra supports Windows right now using RawInput. The next goal is to get XInput support for gamepads that work better with it (i.e. Xbox Controllers).
 
@@ -22,9 +22,14 @@ Now you're able to poll input from your connected gamepads by calling the variou
 
 ## Known Issues
 🎮 **HIDra won't recognize gamepads connected after the program launches.**\
-Coming Soon! WM_DEVICECHANGE has not been implemented, and so HIDra can't detect when controllers disconnect and reconnect in order to properly categorize their input.
+Coming Soon! WM_DEVICECHANGE has not been implemented, and so HIDra can't detect when controllers disconnect and reconnect in order to properly categorize their input.\
+Workaround: Connect your controller to your computer before launching your build
+
+⌨️ **Right Shift is not recognized as a unique key**\
+Not planned, will probably come eventually. This is because RawInput doesn't pass a flag to signify which shift is pressed, unlike how it treats ALT and CTRL. Keyboard parsing would need to be slightly altered to check against the key scan-code and is that really worth it just to get right shift? Who even uses right shift?
 
 ## Changelog
 0.0 - Initial Push of HIDra\
 0.1 (Apr-27th-2025) - Added generic gamepad polling\
 0.1.1 (Apr-28th-2025) - Minor bugfix\
+0.2 (Apr-29th-2025) - Added keyboard polling

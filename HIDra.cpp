@@ -15,13 +15,16 @@ namespace HIDra
 
     void Core::Flush()
     {
+#if HIDra_Keyboard
+        m_keyboardManager.Flush();
+#endif // HIDra_Keyboard
 #if HIDra_Gamepad
         m_gamepadManager.Flush();
 #endif // HIDra_Gamepad
     }
 
 #if HIDra_Gamepad
-    float Core::GetAxis(GamepadAxisID axis, GamepadID gamepadID)
+    float Core::GetAxis(GamepadAxisID axis, GamepadID gamepadID) const
     {
         GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
 
@@ -38,7 +41,7 @@ namespace HIDra
         return 0.0f;
     }
 
-    Vec2f Core::GetAxis2D(GamepadAxisID axis, GamepadID gamepadID)
+    Vec2f Core::GetAxis2D(GamepadAxisID axis, GamepadID gamepadID) const
     {
         GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
         switch (axis)
@@ -54,21 +57,21 @@ namespace HIDra
         return Vec2f();
     }
 
-    bool Core::GetButton(GamepadButtonFlags button, GamepadID gamepadID)
+    bool Core::GetButton(GamepadButtonFlags button, GamepadID gamepadID) const
     {
         GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
         GamepadInputData const& inputData = gamepad->GetInputData();
         return inputData.GetFlag(button);
     }
     
-    bool Core::GetButtonDown(GamepadButtonFlags button, GamepadID gamepadID)
+    bool Core::GetButtonDown(GamepadButtonFlags button, GamepadID gamepadID) const
     {
         GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
         GamepadInputData const& inputData = gamepad->GetInputData();
         return inputData.GetFlag(button) && inputData.WasFlagSetThisFrame(button);
     }
     
-    bool Core::GetButtonUp(GamepadButtonFlags button, GamepadID gamepadID)
+    bool Core::GetButtonUp(GamepadButtonFlags button, GamepadID gamepadID) const
     {
         GamepadBase const* gamepad = m_gamepadManager.GetGamepad(gamepadID);
         GamepadInputData const& inputData = gamepad->GetInputData();

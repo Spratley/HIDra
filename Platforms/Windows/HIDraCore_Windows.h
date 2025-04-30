@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../HIDraDefs.h"
+#include "../../HIDraTypes.h"
 
 #if HIDra_Windows
 namespace HIDra
@@ -16,12 +16,18 @@ namespace HIDra
     using PlatformCoreInitData = PlatformCoreInitData_Windows;
 
     class GamepadManager;
+    class KeyboardManager;
+
     class PlatformCore_Windows
     {
     public:
 #if HIDra_Gamepad
         void ProcessGamepadInput(RawInputData rawInput, GamepadManager& gamepadManager);
 #endif // HIDra_Gamepad
+
+#if HIDra_Keyboard
+        void ProcessKeystroke(HIDra_UInt16 virtualKeyCode, HIDra_UInt16 flags, KeyboardManager& keyboardManager);
+#endif
 
     protected:
         bool PlatformInit(PlatformCoreInitData const& initData, GamepadManager& gamepadManager);
