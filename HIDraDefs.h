@@ -14,7 +14,7 @@
 
 // -=-= Feature Toggles =-=-
 // Gamepad
-#define HIDra_Gamepad 0
+#define HIDra_Gamepad 1
 
 #if HIDra_Gamepad
     // What gamepad support is needed?
