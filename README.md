@@ -25,8 +25,11 @@ Now you're able to poll input from your connected gamepads by calling the variou
 Coming Soon! WM_DEVICECHANGE has not been implemented, and so HIDra can't detect when controllers disconnect and reconnect in order to properly categorize their input.\
 Workaround: Connect your controller to your computer before launching your build
 
-⌨️ **Right Shift is not recognized as a unique key**\
+⌨️ **Right Shift is not recognized as a unique key.**\
 Not planned, will probably come eventually. This is because RawInput doesn't pass a flag to signify which shift is pressed, unlike how it treats ALT and CTRL. Keyboard parsing would need to be slightly altered to check against the key scan-code and is that really worth it just to get right shift? Who even uses right shift?
+
+🎮 **Gamepads sometimes fail to read with error HIDP_STATUS_INCOMPATIBLE_REPORT_ID.**\
+This bug is my nemesis. Any info on it would be greatly appreciated. As of right now, the best workaround is rebooting your PC.
 
 ## Changelog
 0.0 - Initial Push of HIDra\
