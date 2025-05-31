@@ -22,6 +22,8 @@ namespace HIDra
     {
     public:
 #if HIDra_Gamepad
+        bool GatherGamepads(GamepadManager& gamepadManager);
+
         void ProcessGamepadInput(RawInputData rawInput, GamepadManager& gamepadManager);
 #endif // HIDra_Gamepad
 
@@ -38,7 +40,6 @@ namespace HIDra
 #if HIDra_Gamepad
         bool SubscribeToDeviceChanges(WindowHandle hWnd);
 
-        bool GatherGamepads(GamepadManager& gamepadManager);
         bool IsDeviceGamepad(DeviceHandle device) const;
 #endif // HIDra_Gamepad
     };

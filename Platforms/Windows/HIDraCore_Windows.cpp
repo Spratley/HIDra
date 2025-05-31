@@ -32,6 +32,8 @@
 WNDPROC defaultWindowProcedure;
 LRESULT CALLBACK WindowsRawInputMessageHandler(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    HIDra::Core& core = HIDra::Core::GetInstance();
+
     if (message == WM_INPUT)
     {
         // Ideally this data would be passed off to an input handler so we're not blocking the windows message
@@ -48,7 +50,6 @@ LRESULT CALLBACK WindowsRawInputMessageHandler(HWND windowHandle, UINT message, 
         if (expectedSize == GetRawInputData((HRAWINPUT)lParam, RID_INPUT, messageBuffer, &inputMessageSize, sizeof(RAWINPUTHEADER)))
         {
             RAWINPUT* rawData = (RAWINPUT*)messageBuffer;
-            HIDra::Core& core = HIDra::Core::GetInstance();
 
 #if HIDra_Keyboard
             if (rawData->header.dwType == RIM_TYPEKEYBOARD)
@@ -77,6 +78,7 @@ LRESULT CALLBACK WindowsRawInputMessageHandler(HWND windowHandle, UINT message, 
     else if (message == WM_DEVICECHANGE)
     {
         // TODO: Process device change messages
+        core.GatherGamepads(core.GetGamepadManager());
     }
 
     return CallWindowProc(defaultWindowProcedure, windowHandle, message, wParam, lParam);
@@ -148,6 +150,7 @@ namespace HIDra
 
             if (foundGamepadID != -1)
             {
+                // Could this be the source of the bug? 
                 Gamepad* gamepad = gamepadManager.GetConnectedGamepad(static_cast<GamepadID>(foundGamepadID));
                 gamepad->SetLastKnownDeviceHandle(device);
                 return gamepad;
@@ -204,7 +207,7 @@ namespace HIDra
         HIDra_UInt32 reportSize = rawInputData->data.hid.dwCount * rawInputData->data.hid.dwSizeHid;
 
         // Parse Button Presses
-        USAGE usages[64];
+        USAGE usages[64] = {};
         ULONG usageLength = 64;
 
         PHIDP_BUTTON_CAPS buttonCapabilities = static_cast<PHIDP_BUTTON_CAPS>(gamepad->GetButtonCapabilities());
