@@ -102,7 +102,7 @@ namespace HIDra
                 return L"";
             }
 
-            HANDLE deviceHandle = CreateFile(deviceName,
+            HANDLE deviceHandle = CreateFile((LPCSTR)deviceName,
                 GENERIC_READ | GENERIC_WRITE,
                 FILE_SHARE_READ | FILE_SHARE_WRITE,
                 nullptr,
@@ -392,7 +392,7 @@ namespace HIDra
         PWSTR deviceInterfaceList = new WCHAR[deviceInterfaceListSize];
         ZeroMemory(deviceInterfaceList, deviceInterfaceListSize * sizeof(WCHAR));
 
-        cr = CM_Get_Device_Interface_List(&hidGuid, NULL, deviceInterfaceList, deviceInterfaceListSize, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
+        cr = CM_Get_Device_Interface_List(&hidGuid, NULL, (PZZSTR)deviceInterfaceList, deviceInterfaceListSize, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
         if (cr != CR_SUCCESS)
         {
             PRINT_ERROR("Could not retrieve device interface list! Error %i", cr);
@@ -403,7 +403,7 @@ namespace HIDra
         DeviceHandle deviceHandle = INVALID_HANDLE_VALUE;
         for (PWSTR currentInterface = deviceInterfaceList; *currentInterface; currentInterface += wcslen(currentInterface) + 1)
         {
-            deviceHandle = CreateFile(currentInterface,
+            deviceHandle = CreateFile((LPCSTR)currentInterface,
                 GENERIC_READ | GENERIC_WRITE,
                 FILE_SHARE_READ | FILE_SHARE_WRITE,
                 NULL,
