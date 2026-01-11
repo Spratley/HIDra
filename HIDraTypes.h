@@ -36,7 +36,7 @@ namespace HIDra
 
     // Helper for Keyboard
     // Bitfield for large amounts of data (i.e. a keyboard with 256 possible keycodes)
-    template<HIDra_UInt32 BytesCount>
+    template<HIDra_UInt32 ByteCount>
     struct BigBitfield
     {
     public:
@@ -49,11 +49,11 @@ namespace HIDra
         bool GetPagedIndex(HIDra_UInt32 bitIndex, HIDra_UInt32& outPageIndex, HIDra_UInt32& outPagedBitIndex) const;
 
     private:
-        HIDra_UInt8 m_dataPages[BytesCount] = {};
+        HIDra_UInt8 m_dataPages[ByteCount] = {};
     };
 
-    template<HIDra_UInt32 BytesCount>
-    inline bool BigBitfield<BytesCount>::GetBit(HIDra_UInt32 bitIndex) const
+    template<HIDra_UInt32 ByteCount>
+    inline bool BigBitfield<ByteCount>::GetBit(HIDra_UInt32 bitIndex) const
     {
         HIDra_UInt32 pageIndex;
         HIDra_UInt32 pagedBitIndex;
@@ -68,8 +68,8 @@ namespace HIDra
         return (m_dataPages[pageIndex] & (0b1 << pagedBitIndex)) > 0;
     }
     
-    template<HIDra_UInt32 BytesCount>
-    inline void BigBitfield<BytesCount>::SetBit(HIDra_UInt32 bitIndex, bool value)
+    template<HIDra_UInt32 ByteCount>
+    inline void BigBitfield<ByteCount>::SetBit(HIDra_UInt32 bitIndex, bool value)
     {
         HIDra_UInt32 pageIndex;
         HIDra_UInt32 pagedBitIndex;
@@ -85,17 +85,17 @@ namespace HIDra
         m_dataPages[pageIndex] = (m_dataPages[pageIndex] & ~mask) | (static_cast<HIDra_UInt8>(value) << pagedBitIndex);
     }
 
-    template<HIDra_UInt32 BytesCount>
-    inline void BigBitfield<BytesCount>::ZeroMemory()
+    template<HIDra_UInt32 ByteCount>
+    inline void BigBitfield<ByteCount>::ZeroMemory()
     {
         memset(m_dataPages, 0, sizeof(m_dataPages));
     }
 
-    template<HIDra_UInt32 BytesCount>
-    inline bool BigBitfield<BytesCount>::GetPagedIndex(HIDra_UInt32 bitIndex, HIDra_UInt32& outPageIndex, HIDra_UInt32& outPagedBitIndex) const
+    template<HIDra_UInt32 ByteCount>
+    inline bool BigBitfield<ByteCount>::GetPagedIndex(HIDra_UInt32 bitIndex, HIDra_UInt32& outPageIndex, HIDra_UInt32& outPagedBitIndex) const
     {
 #if HIDra_Debug
-        constexpr HIDra_UInt32 maxBitIndex = BytesCount * 8;
+        constexpr HIDra_UInt32 maxBitIndex = ByteCount * 8;
         if (bitIndex >= maxBitIndex)
         {
             printf("Attempting to access a BigBitfield out of bounds!");
