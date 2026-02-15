@@ -5,10 +5,11 @@
 
 // -=-= Platform Core =-=-
 #define HIDra_Windows 1
+#define HIDra_WebAssembly 0
 // #define HIDra_Linux 0    <HIDra has no Linux Support>
 // #define HIDra_OSX 0      <HIDra has no OSX Support>
 
-#if !(HIDra_Windows ^ HIDra_Linux ^ HIDra_OSX)
+#if !(HIDra_Windows ^ HIDra_WebAssembly ^ HIDra_Linux ^ HIDra_OSX)
 #error HIDra has multiple or no platforms selected! Please only define one as your build target.
 #endif
 
