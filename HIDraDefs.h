@@ -37,7 +37,7 @@
 // Mouse
 #define HIDra_Mouse 0
 
-#if !HIDra_Gamepad && !HIDra_Keyboard
+#if !HIDra_Gamepad && !HIDra_Keyboard && !HIDra_Mouse
 #error You're using HIDra but nothing is enabled? Bruh
 #endif // !HIDra_Gamepad && !HIDra_Keyboard
 

@@ -2,6 +2,9 @@
 #if HIDra_Windows
 #include "Windows/HIDraCore_Windows.h"
 #include "Windows/Gamepad/HIDraGamepad_Windows.h"
+#elif HIDra_WebAssembly
+#include "WASM/HIDraCore_WASM.h"
+#include "WASM/Gamepad/HIDraGamepad_WASM.h"
 #elif HIDra_Linux
 #error HIDra has no support for Linux yet!
 #elif HIDra_OSX
