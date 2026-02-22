@@ -1,5 +1,5 @@
-#include "../../HIDraDefs.h"
-#if HIDra_Windows
+#include "../../Defs/HIDraDefs.h"
+#if HIDra_Platform == HIDra_Windows
 #include "../../HIDra.h"
 
 #if HIDra_Keyboard
@@ -431,4 +431,4 @@ namespace HIDra
 }
 #undef PRINT_ERROR
 #undef PRINT_WINDOWS_ERROR
-#endif // HIDra_Windows
+#endif // HIDra_Platform == HIDra_Windows

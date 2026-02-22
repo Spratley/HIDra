@@ -14,7 +14,7 @@ Please read the license before using HIDra in your own project, it's still total
 ## Quickstart Guide for VS Nerds
 First things first- import the files into your project hierarchy. If you're using precompiled headers, make sure to exclude any HIDra .cpp files from it.
 
-Out of the box, HIDra supports multiple unique gamepad input (For local multi-player). This and more are configurable in HIDraDefs.h, so feel free to edit that to better match your project needs.
+Out of the box, HIDra supports multiple unique gamepad input (For local multi-player). This and more are configurable by creating a HIDra_UserDefs.h in your project, and adding it to your additional include paths. Check out HIDra_UserDefs.h.template to see what you can configure.
 
 To get HIDra running, you just need to include HIDra.h wherever you'll need it, and then call HIDra::Init() in your boot sequence, and HIDra::Flush() in your update loop, and that's it! Note: For Windows, HIDra::Init() requires a HWND to your main window, and that's on you to figure out.
 
@@ -31,8 +31,13 @@ Not planned, will probably come eventually. This is because RawInput doesn't pas
 🎮 **Gamepads sometimes fail to read with error HIDP_STATUS_INCOMPATIBLE_REPORT_ID.**\
 This bug is my nemesis. Any info on it would be greatly appreciated. As of right now, the best workaround is rebooting your PC.
 
+
+(Yes I know that emojis are a hallmark of LLM text but I wrote these myself and just wanted it to look nice).
+
+
 ## Changelog
 0.0 - Initial Push of HIDra\
 0.1 (Apr-27th-2025) - Added generic gamepad polling\
 0.1.1 (Apr-28th-2025) - Minor bugfix\
-0.2 (Apr-29th-2025) - Added keyboard polling
+0.2 (Apr-29th-2025) - Added keyboard polling\
+0.3 (Feb-22nd-2026) - Improved HIDra_Defs in prep for Platform Independence

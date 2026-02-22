@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HIDraDefs.h"
+#include "Defs/HIDraDefs.h"
 
 #include <cstring> // For Memset
 #if HIDra_Debug

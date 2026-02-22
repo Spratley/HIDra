@@ -1,4 +1,4 @@
-#include "../HIDraDefs.h"
+#include "../Defs/HIDraDefs.h"
 #include "HIDraGenericGamepad.h"
 
 #include <cmath>

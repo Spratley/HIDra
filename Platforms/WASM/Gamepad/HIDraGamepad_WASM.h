@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#if HIDra_WebAssembly && HIDra_Gamepad
+#if (HIDra_Platform == HIDra_WebAssembly) && HIDra_Gamepad
 namespace HIDra
 {
     class Gamepad_WASM : public GamepadBase
@@ -14,4 +14,4 @@ namespace HIDra
 
     using Gamepad = Gamepad_WASM;
 } // namespace HIDra
-#endif // HIDra_WebAssembly && HIDra_Gamepad
+#endif // (HIDra_Platform == HIDra_WebAssembly) && HIDra_Gamepad

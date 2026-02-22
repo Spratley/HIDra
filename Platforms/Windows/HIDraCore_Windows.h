@@ -2,7 +2,7 @@
 
 #include "../../HIDraTypes.h"
 
-#if HIDra_Windows
+#if HIDra_Platform == HIDra_Windows
 namespace HIDra
 {
     using WindowHandle = void*;
@@ -44,5 +44,5 @@ namespace HIDra
 #endif // HIDra_Gamepad
     };
     using PlatformCore = PlatformCore_Windows;
-}
-#endif // HIDra_Windows
+} // namespace HIDra
+#endif // HIDra_Platform == HIDra_Windows

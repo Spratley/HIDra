@@ -1,6 +1,6 @@
 #include "HIDraKeyCodeTranslator_Windows.h"
 
-#if HIDra_Windows
+#if HIDra_Platform == HIDra_Windows
 #include <windows.h>
 // MUST come after windows.h
 #include <WinUser.h>
@@ -72,4 +72,4 @@ namespace HIDra
         }
     }
 } // namespace HIDra
-#endif // HIDra_Windows
+#endif // HIDra_Platform == HIDra_Windows

@@ -1,6 +1,6 @@
-#include "../../../HIDraDefs.h"
+#include "../../../Defs/HIDraDefs.h"
 #include "HIDraGamepadDecoder_Windows.h"
-#if HIDra_Windows && HIDra_Gamepad
+#if (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
 #include "HIDraGamepad_Windows.h"
 
 #define MAP_BUTTON_ID_FLAG(ButtonID, ButtonFlag) case ButtonID: heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | ButtonFlag); continue
@@ -9,7 +9,7 @@ namespace HIDra
 {
     constexpr float uint16ToFloatDivisor = 1.0f / static_cast<float>(0xFFFF);
     // Remaps a UInt16 from range [0x0000 to 0xFFFF] to float [-1.0f to 1.0f]
-    inline float UInt16ToSignedNormalizedFloat(HIDra_UInt16 value) { return (value * uint16ToFloatDivisor) * 2.0f - 1.0f; }
+    inline float UInt16ToSignedNormalizedFloat(HIDra_UInt16 value) { return (static_cast<float>(value) * uint16ToFloatDivisor) * 2.0f - 1.0f; }
 
     // Nintendo Switch Pro Controller
     enum class NintendoSwitchProInputIDs
@@ -126,5 +126,5 @@ namespace HIDra
         // Dispatch buttons (Now that we've polled the DPad)
         outInputData.SetFlags(heldButtonFlags);
     }
-}
-#endif // HIDra_Windows && HIDra_Gamepad
+} // namespace HIDra
+#endif // (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad

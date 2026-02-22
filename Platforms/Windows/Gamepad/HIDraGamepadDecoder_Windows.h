@@ -1,6 +1,6 @@
 #pragma once
 
-#if HIDra_Windows && HIDra_Gamepad
+#if (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
 namespace HIDra
 {
     struct GamepadReport_Windows;
@@ -12,5 +12,5 @@ namespace HIDra
     public:
         static void Decode(GamepadReport_Windows const& report, GamepadInputData& outInputData);
     };
-}
-#endif // HIDra_Windows && HIDra_Gamepad
+} // namespace HIDra
+#endif // (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad

@@ -1,12 +1,12 @@
 #pragma once
-#include "../../../HIDraDefs.h"
+#include "../../../Defs/HIDraDefs.h"
 
 #include "../../../Gamepad/HIDraGamepad.h"
 
 #include <string>
 #include <vector>
 
-#if HIDra_Windows && HIDra_Gamepad
+#if (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
 namespace HIDra
 {
     using DeviceHandle = void*;
@@ -75,5 +75,5 @@ namespace HIDra
     };
 
     using Gamepad = Gamepad_Windows;
-}
-#endif // HIDra_Windows && HIDra_Gamepad
+} // namespace HIDra
+#endif // (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad

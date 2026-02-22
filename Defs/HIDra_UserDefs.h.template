@@ -1,0 +1,26 @@
+// -=-= Platform =-=-
+// Used to change what platform is being targeted by the current build
+// See HIDra_Defs.h for options
+#define HIDra_Platform HIDra_Platform_Windows
+
+// -=-= Feature Toggles =-=-
+// Note: At least Gamepad, Keyboard, or Mouse support MUST be enabled for HIDra to not throw an error
+// After all, if you're not polling for ANY input, why is it being compiled?
+
+// Should HIDra compile with Gamepad support?
+#define HIDra_Gamepad HIDra_Enable
+// What kind of gamepad support is needed?
+// Note: These only matter if HIDra_Gamepad is set to HIDra_Enable
+// At least one must be enabled!
+#define HIDra_GP_Generic HIDra_Enable		// Gathers input reports from all connected controllers in a single all-purpose place. Ideal for single player or menus where it doesn't matter which gamepad sends an input.
+#define HIDra_GP_Multiple HIDra_Disable		// Allows individual controllers to be polled by ID. Ideal for multi-player.
+
+// Should HIDra compile with Keyboard support? 
+#define HIDra_Keyboard HIDra_Enable
+
+// Should HIDra compile with Mouse support?
+#define HIDra_Mouse HIDra_Enable
+
+// -=-= Debugging =-=-
+// Toggles debug build features, logging error messages and early returns for invalid state.
+#define HIDra_Debug HIDra_Disable

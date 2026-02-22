@@ -2,7 +2,7 @@
 
 #include "../../HIDraTypes.h"
 
-#if HIDra_WebAssembly
+#if HIDra_Platform == HIDra_WebAssembly
 namespace HIDra
 {
     class GamepadManager;
@@ -18,4 +18,4 @@ namespace HIDra
     };
     using PlatformCore = PlatformCore_WASM;
 } // namespace HIDra
-#endif // HIDra_WebAssembly
+#endif // HIDra_Platform == HIDra_WebAssembly
