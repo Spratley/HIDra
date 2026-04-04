@@ -40,4 +40,5 @@ This bug is my nemesis. Any info on it would be greatly appreciated. As of right
 0.1 (Apr-27th-2025) - Added generic gamepad polling\
 0.1.1 (Apr-28th-2025) - Minor bugfix\
 0.2 (Apr-29th-2025) - Added keyboard polling\
-0.3 (Feb-22nd-2026) - Improved HIDra_Defs in prep for Platform Independence
+0.3 (Feb-22nd-2026) - Improved HIDra_Defs in prep for Platform Independence\
+0.4 (Apr-04th-2026) - Total restructure of project in prep for Platform Independence
