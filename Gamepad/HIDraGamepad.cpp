@@ -1,79 +1,39 @@
 #include "HIDraGamepad.h"
 #if HIDra_Gamepad
-#include "HIDraHIDDatabase.h"
+
+namespace
+{
+    template <class ValueType>
+    inline ValueType AddAveragedValue(ValueType const& previousAverage,
+                                      HIDra::HIDra_UInt32 previousCount,
+                                      ValueType const& value)
+    {
+        return ((previousAverage * previousCount) + value) / (previousCount + 1);
+    }
+} // namespace
 
 namespace HIDra
 {
-    float GamepadInputData::GetAxis(GamepadAxisID axisID) const
+    void Gamepad::Report(GamepadInputData const& report)
     {
-        switch (axisID)
+        if (m_inputReportsThisFrame == 0)
         {
-        case AID_TRIGGER_L:
-            return GetTriggerL();
-        case AID_TRIGGER_R:
-            return GetTriggerR();
+            m_buttonFlagsSetThisFrame =
+              static_cast<GamepadButtonFlags>(m_inputData.m_buttonFlags ^ report.m_buttonFlags);
+            m_inputReportsThisFrame++;
+            m_inputData = report;
+            return;
         }
-        return 0.0f;
-    }
-    
-    Vec2f const& GamepadInputData::GetAxis2D(GamepadAxisID axisID) const
-    {
-        switch (axisID)
-        {
-        case AID_STICK_L:
-            return GetStickL();
-        case AID_STICK_R:
-            return GetStickR();
-        }
-        return Vec2f::s_zero;
-    }
 
-    void GamepadInputData::SetFlags(GamepadButtonFlags flags)
-    {
-        m_flagsSetThisFrame = static_cast<GamepadButtonFlags>(m_flags ^ flags);
-        m_flags = flags;
-    }
+        // Raise additional flags for any buttons changed by this report
+        m_buttonFlagsSetThisFrame = static_cast<GamepadButtonFlags>(
+          m_buttonFlagsSetThisFrame | (m_inputData.m_buttonFlags ^ report.m_buttonFlags));
+        m_inputData.m_buttonFlags = report.m_buttonFlags;
 
-    void GamepadInputData::SetTriggerL(float value)
-    {
-        m_triggerL = value;
+        AddAveragedValue(m_inputData.m_stickL, m_inputReportsThisFrame, report.m_stickL);
+        AddAveragedValue(m_inputData.m_stickR, m_inputReportsThisFrame, report.m_stickR);
+        AddAveragedValue(m_inputData.m_triggerL, m_inputReportsThisFrame, report.m_triggerL);
+        AddAveragedValue(m_inputData.m_triggerR, m_inputReportsThisFrame, report.m_triggerR);
     }
-    
-    void GamepadInputData::SetTriggerR(float value)
-    {
-        m_triggerR = value;
-    }
-
-    void GamepadInputData::SetAxis(GamepadAxisID axisID, float value)
-    {
-        switch (axisID)
-        {
-        case AID_TRIGGER_L:
-            SetTriggerL(value);
-            break;
-        case AID_TRIGGER_R:
-            SetTriggerR(value);
-            break;
-        }
-    }
-
-    void GamepadInputData::SetAxis(GamepadAxisID axisID, Vec2f const& value)
-    {
-        switch (axisID)
-        {
-        case AID_STICK_L:
-            SetStickL(value);
-            break;
-        case AID_STICK_R:
-            SetStickR(value);
-            break;
-        }
-    }
-
-    GamepadBase::GamepadBase(GamepadBase&& otherGamepad) noexcept
-        : m_inputData() // Clear input data- It's going to be refreshed on the next frame anyway
-        , m_vendor(otherGamepad.m_vendor)
-        , m_product(otherGamepad.m_product)
-    {}
-}
+} // namespace HIDra
 #endif // HIDra_Gamepad

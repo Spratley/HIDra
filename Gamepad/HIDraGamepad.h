@@ -1,94 +1,108 @@
 #pragma once
 
 #include "../HIDraEnums.h"
-#include "HIDraHIDDatabase.h"
+#include "HIDraGamepadPlatformData.h"
 
 #if HIDra_Gamepad
 namespace HIDra
 {
     constexpr float AxisDeadZone = 0.01f;
 
+    // Is there a way to generalize this?
+    // Not all gamepads have the same input data
+    // What about non-standard gamepads? Fightsticks?
     struct GamepadInputData
     {
+        Vec2f m_stickL;
+        Vec2f m_stickR;
+        float m_triggerL = 0.0f;
+        float m_triggerR = 0.0f;
+        GamepadButtonFlags m_buttonFlags = BID_NONE;
+    };
+
+    class Gamepad
+    {
     public:
-        GamepadButtonFlags GetFlags() const { return m_flags; }
-        bool GetFlag(GamepadButtonFlags flag) const { return (m_flags & flag) != 0; }
-        bool WasFlagSetThisFrame(GamepadButtonFlags flag) const { return (m_flagsSetThisFrame & flag) != 0; }
+        Gamepad() = default;
+        Gamepad(Gamepad&) = delete;
+        Gamepad(Gamepad&& otherGamepad)
+            : m_vendor(otherGamepad.m_vendor)
+            , m_product(otherGamepad.m_product)
+            , m_id(otherGamepad.m_id)
+            , m_platformSpecificData(std::move(otherGamepad.m_platformSpecificData))
+        {
+            otherGamepad.m_id = GamepadID::InvalidGamepadID;
+        }
 
-        Vec2f const& GetStickL() const { return m_stickL; }
-        Vec2f const& GetStickR() const { return m_stickR; }
+        Gamepad(Vendor vendor, Product product, GamepadID id, GamepadPlatformData&& platformSpecificData)
+            : m_vendor(vendor)
+            , m_product(product)
+            , m_id(id)
+            , m_platformSpecificData(std::move(platformSpecificData))
+        {}
 
-        float GetTriggerL() const { return m_triggerL; }
-        float GetTriggerR() const { return m_triggerR; }
-
-        float GetAxis(GamepadAxisID axisID) const;
-        Vec2f const& GetAxis2D(GamepadAxisID axisID) const;
-
-        void SetFlags(GamepadButtonFlags flags);
-
-        void SetStickLX(float valueX) { m_stickL.m_x = valueX; }
-        void SetStickLY(float valueY) { m_stickL.m_y = valueY; }
-        void SetStickRX(float valueX) { m_stickR.m_x = valueX; }
-        void SetStickRY(float valueY) { m_stickR.m_y = valueY; }
-
-        void SetStickL(Vec2f const& value) { m_stickL = value; }
-        void SetStickR(Vec2f const& value) { m_stickR = value; }
-
-        void SetTriggerL(float value);
-        void SetTriggerR(float value);
-
-        void SetAxis(GamepadAxisID axisID, float value);
-        void SetAxis(GamepadAxisID axisID, Vec2f const& value);
+        void Report(GamepadInputData const& report);
 
         inline void Flush()
         {
-            m_flagsSetThisFrame = BID_NONE;
+            m_buttonFlagsSetThisFrame = BID_NONE;
+            m_inputReportsThisFrame = 0;
         }
+
+        Vendor GetVendorID() const { return m_vendor; }
+        Product GetProductID() const { return m_product; }
+        GamepadID GetID() const { return m_id; }
+
+        inline float GetAxis(GamepadAxisID axis) const;
+        inline Vec2f GetAxis2D(GamepadAxisID axis) const;
+
+        inline bool GetButton(GamepadButtonFlags button) const;
+        inline bool GetButtonDown(GamepadButtonFlags button) const;
+        inline bool GetButtonUp(GamepadButtonFlags button) const;
+
+        GamepadPlatformData const& GetPlatformSpecificData() const { return m_platformSpecificData; }
 
     private:
-        GamepadButtonFlags m_flags = BID_NONE;
-        GamepadButtonFlags m_flagsSetThisFrame = BID_NONE;
-
-        Vec2f m_stickL;
-        Vec2f m_stickR;
-        
-        float m_triggerL = 0.0f;
-        float m_triggerR = 0.0f;
-    };
-
-    class GamepadBase
-    {
-    public:
-        GamepadBase() = default;
-        GamepadBase(GamepadBase const&) = delete; // No! No copy >:(
-        GamepadBase(GamepadBase&& otherGamepad) noexcept;
-        
-        virtual inline void Flush() { m_inputData.Flush(); }
-
-        inline HIDra_UInt8 GetPredictedAxisCount() const;
-
-        GamepadInputData const& GetInputData() const { return m_inputData; }
-
-    protected:
         GamepadInputData m_inputData;
+        GamepadButtonFlags m_buttonFlagsSetThisFrame = BID_NONE;
+        HIDra_UInt16 m_inputReportsThisFrame = 0;
 
-        Vendor m_vendor = 0;
-        Product m_product = 0;
+        Vendor m_vendor = 0x0000;
+        Product m_product = 0x0000;
+        // TODO: Come back to this when adding ID persistence
+        GamepadID m_id = GamepadID::InvalidGamepadID;
+
+        GamepadPlatformData m_platformSpecificData;
     };
 
-    // Returns the expected number of axes that are sent per message for the product type
-    inline HIDra_UInt8 GamepadBase::GetPredictedAxisCount() const
+    float Gamepad::GetAxis(GamepadAxisID axis) const
     {
-        if (m_vendor == VID_NINTENDO)
+        switch (axis)
         {
-            switch (m_product)
-            {
-            case PID_NINTENDO_SWITCH_PRO_CONTROLLER:
-                return 6;
-            }
+            case GamepadAxisID::AID_TRIGGER_L: return m_inputData.m_triggerL;
+            case GamepadAxisID::AID_TRIGGER_R: return m_inputData.m_triggerR;
+            default:                           return 0.0f;
         }
-
-        return 0;
     }
-}
+
+    Vec2f Gamepad::GetAxis2D(GamepadAxisID axis) const
+    {
+        switch (axis)
+        {
+            case GamepadAxisID::AID_STICK_L: return m_inputData.m_stickL;
+            case GamepadAxisID::AID_STICK_R: return m_inputData.m_stickR;
+            default:                         return Vec2f::s_zero;
+        }
+    }
+
+    bool Gamepad::GetButton(GamepadButtonFlags button) const { return m_inputData.m_buttonFlags & button; }
+    bool Gamepad::GetButtonDown(GamepadButtonFlags button) const
+    {
+        return GetButton(button) && (m_buttonFlagsSetThisFrame & button);
+    }
+    bool Gamepad::GetButtonUp(GamepadButtonFlags button) const
+    {
+        return !GetButton(button) && (m_buttonFlagsSetThisFrame & button);
+    }
+} // namespace HIDra
 #endif // HIDra_Gamepad

@@ -5,7 +5,7 @@
 namespace HIDra
 {
 #if HIDra_Keyboard
-    class KeyboardManager
+    class KeyboardHandler
     {
     public:
         bool GetKey(KeyCode keyCode) const;
@@ -28,6 +28,7 @@ namespace HIDra
         BigBitfield<RequiredBytes> m_keyStateSetThisFrame;
     };
 #else
-    class KeyboardManager {};
+    class KeyboardHandler
+    {};
 #endif // HIDra_Keyboard
-}
+} // namespace HIDra

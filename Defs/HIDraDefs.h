@@ -32,6 +32,7 @@
 #define HIDra_Gamepad HIDra_Enable
 #endif // ndef HIDra_Gamepad
 
+// TODO: Validate that these work independantly
 #ifndef HIDra_GP_Generic
 #define HIDra_GP_Generic HIDra_Enable
 #endif // ndef HIDra_GP_Generic
