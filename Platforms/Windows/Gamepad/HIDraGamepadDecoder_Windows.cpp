@@ -103,6 +103,9 @@ namespace HIDra
                           axis.m_value); // Sticks are read inverted, flip the values on translation
                         break;
 
+                    // TODO: I realized that YES you can hypothetically hold UP and DoWN, or LEFT and RIGHT at the same
+                    // time, so I need to come back and figure out what code is sent when ALL those combinations happen
+
                     // The DPad on a Nintendo Switch is very weird
                     // It's read as an axis, but the value represents a compound of which directions are held
                     // The thing is, the values are clockwise around the DPad starting from the north one
