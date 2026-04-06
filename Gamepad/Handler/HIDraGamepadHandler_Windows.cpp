@@ -1,6 +1,6 @@
 #include "HIDraGamepadHandler.h"
 
-#if HIDra_Gamepad
+#if (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad
 
 #include <Windows.h>
 // Windows.h must be included first
@@ -232,4 +232,4 @@ namespace HIDra
 // Still don't do this
 #undef PRINT_ERROR
 #undef PRINT_WINDOWS_ERROR
-#endif // HIDra_Gamepad
+#endif // (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad

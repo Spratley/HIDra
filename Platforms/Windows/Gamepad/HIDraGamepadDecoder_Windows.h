@@ -1,7 +1,7 @@
 #pragma once
 #include "../../../HIDraTypes.h"
 
-#if (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
+#if (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad
 #include <vector>
 
 namespace HIDra
@@ -35,4 +35,4 @@ namespace HIDra
 
     void DecodeWindowsReport(GamepadReport_Windows const& windowsReport, GamepadInputData& outInputData);
 } // namespace HIDra
-#endif // (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
+#endif // (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad

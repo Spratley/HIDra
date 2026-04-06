@@ -3,6 +3,7 @@
 #include "Defs/HIDraDefs.h"
 
 #include <cstring> // For Memset
+#include <utility> // For std::move
 #if HIDra_Debug
 #include <cstdio>
 #endif // HIDra_Debug

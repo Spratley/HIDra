@@ -1,6 +1,6 @@
 #include "HIDraGamepadDecoder_Windows.h"
 
-#if (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
+#if (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad
 #include "../../../Gamepad/HIDraGamepad.h"
 #include "../../../Gamepad/HIDraHIDDatabase.h"
 
@@ -167,4 +167,4 @@ namespace HIDra
     } // namespace HIDra
 
 } // namespace HIDra
-#endif // (HIDra_Platform == HIDra_Windows) && HIDra_Gamepad
+#endif // (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad

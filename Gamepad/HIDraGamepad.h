@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../HIDraEnums.h"
-#include "HIDraGamepadPlatformData.h"
+#include "PlatformData/HIDraGamepadPlatformData.h"
 
 #if HIDra_Gamepad
 namespace HIDra
@@ -25,7 +25,7 @@ namespace HIDra
     public:
         Gamepad() = default;
         Gamepad(Gamepad&) = delete;
-        Gamepad(Gamepad&& otherGamepad)
+        Gamepad(Gamepad&& otherGamepad) noexcept
             : m_vendor(otherGamepad.m_vendor)
             , m_product(otherGamepad.m_product)
             , m_id(otherGamepad.m_id)

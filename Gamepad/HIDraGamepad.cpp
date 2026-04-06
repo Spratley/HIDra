@@ -3,7 +3,7 @@
 
 namespace
 {
-    template <class ValueType>
+    template <typename ValueType>
     inline ValueType AddAveragedValue(ValueType const& previousAverage,
                                       HIDra::HIDra_UInt32 previousCount,
                                       ValueType const& value)

@@ -4,7 +4,7 @@
 
 namespace HIDra
 {
-    Core::Core(Core_PlatformInitData const& initData) {}
-}
+    bool Core::Init(Core_PlatformInitData const& initData) { return true; }
+} // namespace HIDra
 
 #endif // HIDra_Platform == HIDra_Platform_WebAssembly

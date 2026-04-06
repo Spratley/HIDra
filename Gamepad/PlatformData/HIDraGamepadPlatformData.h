@@ -1,9 +1,9 @@
 #pragma once
-#include "../HIDraTypes.h"
+#include "../../HIDraTypes.h"
 
-#if HIDra_Platform == HIDra_Windows
+#if HIDra_Platform == HIDra_Platform_Windows
 #include <string>
-#endif // HIDra_Platform == HIDra_Windows
+#endif // HIDra_Platform == HIDra_Platform_Windows
 
 // I'm not the biggest fan of this pattern
 // Maybe come back to this?
@@ -19,7 +19,7 @@ namespace HIDra
         GamepadPlatformData& operator=(GamepadPlatformData&) = delete;
         GamepadPlatformData& operator=(GamepadPlatformData&& platformSpecificData) noexcept;
 
-#if HIDra_Platform == HIDra_Windows
+#if HIDra_Platform == HIDra_Platform_Windows
         using DeviceHandle = void*;
         using ButtonCapabilitiesPtr = void*;
         using ValueCapabilitiesPtr = void*;

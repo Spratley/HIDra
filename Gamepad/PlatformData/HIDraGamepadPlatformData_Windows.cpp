@@ -1,15 +1,13 @@
 #include "HIDraGamepadPlatformData.h"
+#if HIDra_Platform == HIDra_Platform_Windows
 
-#if HIDra_Platform == HIDra_Windows
 #include <Windows.h>
 #include <hidsdi.h>
 
 #pragma comment(lib, "hid.lib")
-#endif // HIDra_Platform == HIDra_Windows
 
 namespace HIDra
 {
-#if HIDra_Platform == HIDra_Windows
     GamepadPlatformData::GamepadPlatformData(GamepadPlatformData&& platformSpecificData) noexcept
         : m_openDeviceHandle(platformSpecificData.m_openDeviceHandle)
         , m_lastKnownDeviceHandle(platformSpecificData.m_lastKnownDeviceHandle)
@@ -71,5 +69,7 @@ namespace HIDra
 
         return *this;
     }
-#endif // HIDra_Platform == HIDra_Windows
+
 } // namespace HIDra
+
+#endif // HIDra_Platform == HIDra_Platform_Windows
