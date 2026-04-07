@@ -179,6 +179,11 @@ namespace HIDra
 
         return InitGamepadHandler(m_gamepadHandler, hWnd);
     }
+
+    void Core::PostFlush()
+    {
+        // Windows needs nothing extra after flushing
+    }
 } // namespace HIDra
 
 #undef PRINT_ERROR

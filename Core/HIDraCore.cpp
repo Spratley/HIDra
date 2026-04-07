@@ -26,5 +26,6 @@ namespace HIDra
 #if HIDra_Gamepad
         m_gamepadHandler.Flush();
 #endif // HIDra_Gamepad
+        PostFlush();
     }
 } // namespace HIDra

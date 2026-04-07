@@ -131,6 +131,8 @@ namespace HIDra
 
         , BID_PLUS = 1 << 12
         , BID_MINUS = 1 << 13
+
+        , BID_HOME = 1 << 14
     };
 
     enum GamepadAxisID : HIDra_UInt8

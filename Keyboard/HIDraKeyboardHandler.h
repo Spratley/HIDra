@@ -2,6 +2,10 @@
 
 #include "../HIDraEnums.h"
 
+// TODO: Make the distinction between a game-style key input and a text-style key input
+// Games need to map to the same keys regardless of layout
+// Text input needs to respect the value of the key the end-user pressed
+
 namespace HIDra
 {
 #if HIDra_Keyboard

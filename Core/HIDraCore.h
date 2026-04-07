@@ -30,6 +30,9 @@ namespace HIDra
         bool Init(Core_PlatformInitData const& initData);
         void Flush();
 
+    private:
+        void PostFlush();
+
 #if HIDra_Keyboard
     public:
         KeyboardHandler& GetKeyboardHandler() { return m_keyboardHandler; }
