@@ -5,7 +5,7 @@ I can't guarantee this is good- I'm not an input system programmer after all.
 
 HIDra is a WIP, and currently only supports gamepads and keyboard input (No mouse yet).
 
-HIDra supports Windows right now using RawInput. The next goal is to get XInput support for gamepads that work better with it (i.e. Xbox Controllers).
+HIDra supports both Windows using RawInput, as well as Web Assembly compiled using Emscripten. The next goal is to get XInput support for gamepads that work better with it (i.e. Xbox Controllers).
 
 Personally I don't intend to support Linux or Mac any time soon since I don't use either but who knows!
 
