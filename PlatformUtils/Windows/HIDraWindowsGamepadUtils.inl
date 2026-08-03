@@ -71,6 +71,111 @@ namespace
         return std::wstring(serialNumberBuffer);
     }
 
+    bool RefreshGamepadCapabilities(HANDLE rawInputDeviceHandle, HIDra::GamepadPlatformData& windowsData)
+    {
+        UINT nameSize;
+        GetRawInputDeviceInfo(rawInputDeviceHandle, RIDI_DEVICENAME, nullptr, &nameSize);
+
+        wchar_t* deviceName = new wchar_t[nameSize];
+        if (!GetRawInputDeviceInfo(rawInputDeviceHandle, RIDI_DEVICENAME, deviceName, &nameSize))
+        {
+            PRINT_WINDOWS_ERROR("Failed to get device name during capabilities refresh!");
+            delete[] deviceName;
+            return false;
+        }
+
+        HANDLE hidDeviceHandle = CreateFile((LPCSTR)deviceName,
+                                            GENERIC_READ | GENERIC_WRITE,
+                                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                            nullptr,
+                                            OPEN_EXISTING,
+                                            0,
+                                            nullptr);
+        delete[] deviceName;
+
+        PHIDP_PREPARSED_DATA preparsedData;
+        if (!HidD_GetPreparsedData(hidDeviceHandle, &preparsedData))
+        {
+            PRINT_WINDOWS_ERROR("HidD_GetPreparsedData failed during capabilities refresh!");
+            CloseHandle(hidDeviceHandle);
+            return false;
+        }
+
+        HIDP_CAPS capabilities;
+        if (!HidP_GetCaps(preparsedData, &capabilities))
+        {
+            PRINT_WINDOWS_ERROR("HidP_GetCaps failed during capabilities refresh!");
+            HidD_FreePreparsedData(preparsedData);
+            CloseHandle(hidDeviceHandle);
+            return false;
+        }
+
+        // Free old capabilities
+        if (windowsData.m_preparsedData)
+        {
+            HidD_FreePreparsedData(static_cast<PHIDP_PREPARSED_DATA>(windowsData.m_preparsedData));
+        }
+        if (windowsData.m_buttonCapabilities)
+        {
+            delete[] static_cast<PHIDP_BUTTON_CAPS>(windowsData.m_buttonCapabilities);
+        }
+        if (windowsData.m_valueCapabilities)
+        {
+            delete[] static_cast<PHIDP_VALUE_CAPS>(windowsData.m_valueCapabilities);
+        }
+
+        // Allocate and populate new button capabilities
+        HIDra::HIDra_UInt16 buttonCapabilitiesCount = capabilities.NumberInputButtonCaps;
+        if (buttonCapabilitiesCount == 0)
+        {
+            PRINT_ERROR("Gamepad has 0 buttons after capabilities refresh!");
+            HidD_FreePreparsedData(preparsedData);
+            CloseHandle(hidDeviceHandle);
+            return false;
+        }
+
+        windowsData.m_buttonCapabilities = new HIDP_BUTTON_CAPS[buttonCapabilitiesCount];
+        if (HIDP_STATUS_SUCCESS
+            != HidP_GetButtonCaps(HidP_Input,
+                                  static_cast<PHIDP_BUTTON_CAPS>(windowsData.m_buttonCapabilities),
+                                  &buttonCapabilitiesCount,
+                                  preparsedData))
+        {
+            PRINT_WINDOWS_ERROR("HidP_GetButtonCaps failed during capabilities refresh!");
+            HidD_FreePreparsedData(preparsedData);
+            CloseHandle(hidDeviceHandle);
+            return false;
+        }
+
+        // Allocate and populate new value capabilities
+        windowsData.m_valueCapabilitiesCount = capabilities.NumberInputValueCaps;
+        if (windowsData.m_valueCapabilitiesCount == 0)
+        {
+            PRINT_ERROR("Gamepad has 0 axes after capabilities refresh!");
+            HidD_FreePreparsedData(preparsedData);
+            CloseHandle(hidDeviceHandle);
+            return false;
+        }
+
+        windowsData.m_valueCapabilities = new HIDP_VALUE_CAPS[windowsData.m_valueCapabilitiesCount];
+        if (HIDP_STATUS_SUCCESS
+            != HidP_GetValueCaps(HidP_Input,
+                                 static_cast<PHIDP_VALUE_CAPS>(windowsData.m_valueCapabilities),
+                                 &windowsData.m_valueCapabilitiesCount,
+                                 preparsedData))
+        {
+            PRINT_WINDOWS_ERROR("HidP_GetValueCaps failed during capabilities refresh!");
+            HidD_FreePreparsedData(preparsedData);
+            CloseHandle(hidDeviceHandle);
+            return false;
+        }
+
+        windowsData.m_reportSize = capabilities.InputReportByteLength;
+        windowsData.m_preparsedData = preparsedData;
+        CloseHandle(hidDeviceHandle);
+        return true;
+    }
+
     HIDra::Gamepad const* GetGamepadByHandle(HANDLE deviceHandle)
     {
         HIDra::GamepadHandler const& gamepadHandler = HIDra::Core::GetInstanceConst().GetGamepadHandler();
@@ -100,6 +205,13 @@ namespace
             // PLEASE REFACTOR SO THAT CONST_CAST ISN'T NEEDED
             HIDra::GamepadPlatformData& windowsData =
               const_cast<HIDra::GamepadPlatformData&>(gamepad->GetPlatformSpecificData());
+
+            if (!RefreshGamepadCapabilities(deviceHandle, windowsData))
+            {
+                PRINT_ERROR("Failed to refresh gamepad capabilities!");
+                return nullptr;
+            }
+
             windowsData.m_lastKnownDeviceHandle = deviceHandle;
             return gamepad;
         }

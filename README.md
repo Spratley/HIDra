@@ -28,9 +28,6 @@ Workaround: Connect your controller to your computer before launching your build
 ⌨️ **Right Shift is not recognized as a unique key.**\
 Not planned, will probably come eventually. This is because RawInput doesn't pass a flag to signify which shift is pressed, unlike how it treats ALT and CTRL. Keyboard parsing would need to be slightly altered to check against the key scan-code and is that really worth it just to get right shift? Who even uses right shift?
 
-🎮 **Gamepads sometimes fail to read with error HIDP_STATUS_INCOMPATIBLE_REPORT_ID.**\
-This bug is my nemesis. Any info on it would be greatly appreciated. As of right now, the best workaround is rebooting your PC.
-
 
 (Yes I know that emojis are a hallmark of LLM text but I wrote these myself and just wanted it to look nice).
 
@@ -41,4 +38,5 @@ This bug is my nemesis. Any info on it would be greatly appreciated. As of right
 0.1.1 (Apr-28th-2025) - Minor bugfix\
 0.2 (Apr-29th-2025) - Added keyboard polling\
 0.3 (Feb-22nd-2026) - Improved HIDra_Defs in prep for Platform Independence\
-0.4 (Apr-04th-2026) - Total restructure of project in prep for Platform Independence
+0.4 (Apr-04th-2026) - Total restructure of project in prep for Platform Independence\
+0.5 (Aug-03rd-2026) - Fixed fatal error where stale gamepad data was attempted to be continuously polled
