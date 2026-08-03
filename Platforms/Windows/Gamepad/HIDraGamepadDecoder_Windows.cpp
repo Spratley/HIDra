@@ -4,16 +4,20 @@
 #include "../../../Gamepad/HIDraGamepad.h"
 #include "../../../Gamepad/HIDraHIDDatabase.h"
 
+#include <format>
+#include <iostream>
+
 // Very lazy thing to do here
 #define MAP_BUTTON_ID_FLAG(ButtonID, ButtonFlag) case ButtonID: heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | ButtonFlag); continue
+#define MAP_BUTTON_ID_RAW_BIT(ButtonID, PageIndex, RawBit) heldButtonFlags = (rawReport[PageIndex] & RawBit) ? static_cast<GamepadButtonFlags>(heldButtonFlags | ButtonID) : heldButtonFlags
 
 namespace HIDra
 {
     constexpr float uint16ToFloatDivisor = 1.0f / static_cast<float>(0xFFFF);
-    // Remaps a UInt16 from range [0x0000 to 0xFFFF] to float [-1.0f to 1.0f]
-    inline float UInt16ToSignedNormalizedFloat(HIDra_UInt16 value)
+    constexpr float uint12ToFloatDivisor = 1.0f / static_cast<float>(0x0FFF);
+    inline float UInt16ToSignedNormalizedFloat(HIDra_UInt16 value, float divisor = uint16ToFloatDivisor)
     {
-        return (static_cast<float>(value) * uint16ToFloatDivisor) * 2.0f - 1.0f;
+        return (static_cast<float>(value) * divisor) * 2.0f - 1.0f;
     }
 
     // Nintendo Switch Pro Controller
@@ -138,6 +142,44 @@ namespace HIDra
             // Dispatch buttons (Now that we've polled the DPad)
             outInputData.m_buttonFlags = heldButtonFlags;
         }
+
+        void Decode(Byte const* rawReport, GamepadInputData& outInputData)
+        {
+            GamepadButtonFlags heldButtonFlags = BID_NONE;
+
+            MAP_BUTTON_ID_RAW_BIT(BID_BUMPER_R, 3, 0b01000000);
+            MAP_BUTTON_ID_RAW_BIT(BID_EAST, 3, 0b00001000);
+            MAP_BUTTON_ID_RAW_BIT(BID_SOUTH, 3, 0b00000100);
+            MAP_BUTTON_ID_RAW_BIT(BID_NORTH, 3, 0b00000010);
+            MAP_BUTTON_ID_RAW_BIT(BID_WEST, 3, 0b00000001);
+
+            MAP_BUTTON_ID_RAW_BIT(BID_HOME, 4, 0b00010000);
+            MAP_BUTTON_ID_RAW_BIT(BID_STICK_L, 4, 0b00001000);
+            MAP_BUTTON_ID_RAW_BIT(BID_STICK_R, 4, 0b00000100);
+            MAP_BUTTON_ID_RAW_BIT(BID_PLUS, 4, 0b00000010);
+            MAP_BUTTON_ID_RAW_BIT(BID_MINUS, 4, 0b00000001);
+
+            MAP_BUTTON_ID_RAW_BIT(BID_BUMPER_L, 5, 0b01000000);
+            MAP_BUTTON_ID_RAW_BIT(BID_DPAD_EAST, 5, 0b00000100);
+            MAP_BUTTON_ID_RAW_BIT(BID_DPAD_SOUTH, 5, 0b00000001);
+            MAP_BUTTON_ID_RAW_BIT(BID_DPAD_NORTH, 5, 0b00000010);
+            MAP_BUTTON_ID_RAW_BIT(BID_DPAD_WEST, 5, 0b00001000);
+
+            outInputData.m_buttonFlags = heldButtonFlags;
+
+            outInputData.m_triggerR = (rawReport[3] & 0b1000000) ? 1.0f : 0.0f;
+            outInputData.m_triggerL = (rawReport[5] & 0b1000000) ? 1.0f : 0.0f;
+
+            HIDra_UInt16 stickLHorizontalRaw = rawReport[6] | ((rawReport[7] & 0xF) << 8);
+            HIDra_UInt16 stickLVerticalRaw = (rawReport[7] >> 4) | (rawReport[8] << 4);
+            outInputData.m_stickL.m_x = UInt16ToSignedNormalizedFloat(stickLHorizontalRaw, uint12ToFloatDivisor);
+            outInputData.m_stickL.m_y = UInt16ToSignedNormalizedFloat(stickLVerticalRaw, uint12ToFloatDivisor);
+
+            HIDra_UInt16 stickRHorizontalRaw = rawReport[9] | ((rawReport[10] & 0xF) << 8);
+            HIDra_UInt16 stickRVerticalRaw = (rawReport[10] >> 4) | (rawReport[11] << 4);
+            outInputData.m_stickR.m_x = UInt16ToSignedNormalizedFloat(stickRHorizontalRaw, uint12ToFloatDivisor);
+            outInputData.m_stickR.m_y = UInt16ToSignedNormalizedFloat(stickRVerticalRaw, uint12ToFloatDivisor);
+        }
     } // namespace NSP
 
     void DecodeWindowsReport(GamepadReport_Windows const& windowsReport, GamepadInputData& outInputData)
@@ -165,6 +207,20 @@ namespace HIDra
         // Report is from unknown vendor ID
         // Is it possible to have some sort of fallback so we can still TRY and read the data?
     } // namespace HIDra
+
+    void DecodeRawInputReport(Byte const* rawReport, Vendor vendor, Product product, GamepadInputData& outInputData)
+    {
+        switch (vendor)
+        {
+            case VID_NINTENDO:
+                switch (product)
+                {
+                    case PID_NINTENDO_SWITCH_PRO_CONTROLLER: NSP::Decode(rawReport, outInputData); return;
+                }
+                break;
+            default: break;
+        }
+    }
 
 } // namespace HIDra
 #endif // (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad

@@ -37,7 +37,7 @@ namespace
         UINT nameSize;
         GetRawInputDeviceInfo(rawDeviceHandle, RIDI_DEVICENAME, nullptr, &nameSize);
 
-        wchar_t* deviceName = new wchar_t[nameSize];
+        char* deviceName = new char[nameSize];
         if (GetRawInputDeviceInfo(rawDeviceHandle, RIDI_DEVICENAME, deviceName, &nameSize) <= 0)
         {
             PRINT_WINDOWS_ERROR("Failed to get device name!");
@@ -45,13 +45,8 @@ namespace
             return L"";
         }
 
-        HANDLE hidDeviceHandle = CreateFile((LPCSTR)deviceName,
-                                            GENERIC_READ | GENERIC_WRITE,
-                                            FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                            nullptr,
-                                            OPEN_EXISTING,
-                                            0,
-                                            nullptr);
+        HANDLE hidDeviceHandle =
+          CreateFile((LPCSTR)deviceName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
         delete[] deviceName;
 
         if (hidDeviceHandle == INVALID_HANDLE_VALUE)
@@ -76,7 +71,7 @@ namespace
         UINT nameSize;
         GetRawInputDeviceInfo(rawInputDeviceHandle, RIDI_DEVICENAME, nullptr, &nameSize);
 
-        wchar_t* deviceName = new wchar_t[nameSize];
+        char* deviceName = new char[nameSize];
         if (!GetRawInputDeviceInfo(rawInputDeviceHandle, RIDI_DEVICENAME, deviceName, &nameSize))
         {
             PRINT_WINDOWS_ERROR("Failed to get device name during capabilities refresh!");
@@ -85,7 +80,7 @@ namespace
         }
 
         HANDLE hidDeviceHandle = CreateFile((LPCSTR)deviceName,
-                                            GENERIC_READ | GENERIC_WRITE,
+                                            0, // GENERIC_READ | GENERIC_WRITE,
                                             FILE_SHARE_READ | FILE_SHARE_WRITE,
                                             nullptr,
                                             OPEN_EXISTING,
@@ -233,87 +228,99 @@ namespace
         HIDra::HIDra_UInt32 reportSize = rawInputData->data.hid.dwCount * rawInputData->data.hid.dwSizeHid;
 
         // Parse Button Presses
-        USAGE usages[64] = {};
+        USAGE_AND_PAGE usages[64] = {};
         ULONG usageLength = 64;
 
-        PHIDP_BUTTON_CAPS buttonCapabilities = static_cast<PHIDP_BUTTON_CAPS>(windowsData.m_buttonCapabilities);
         PHIDP_PREPARSED_DATA preparsedData = static_cast<PHIDP_PREPARSED_DATA>(windowsData.m_preparsedData);
 
-        NTSTATUS buttonResult = HidP_GetUsages(HidP_Input,
-                                               buttonCapabilities[0].UsagePage,
-                                               0,
-                                               usages,
-                                               &usageLength,
-                                               preparsedData,
-                                               (PCHAR)report,
-                                               reportSize);
-
-        if (buttonResult != HIDP_STATUS_SUCCESS)
+        if (report[0] == 0x30)
         {
-            switch (buttonResult)
-            {
-                case HIDP_STATUS_INVALID_REPORT_LENGTH:
-                    PRINT_ERROR("HidP_GetUsages Failed! The report length is not valid.");
-                    break;
-                case HIDP_STATUS_INVALID_REPORT_TYPE:
-                    PRINT_ERROR("HidP_GetUsages Failed! The specified report type is not valid.");
-                    break;
-                case HIDP_STATUS_BUFFER_TOO_SMALL:
-                    PRINT_ERROR("HidP_GetUsages Failed! The UsageList buffer is too small to hold all the usages that "
-                                "are currently set to ON on the specified usage page.");
-                    break;
-                case HIDP_STATUS_INCOMPATIBLE_REPORT_ID:
-                    PRINT_ERROR(
-                      "HidP_GetUsages Failed! The collection contains buttons on the specified usage page in a report "
-                      "of the specified type, but there are no such usages in the specified report.");
-                    break;
-                case HIDP_STATUS_INVALID_PREPARSED_DATA:
-                    PRINT_ERROR("HidP_GetUsages Failed! The preparsed data is not valid.");
-                    break;
-                case HIDP_STATUS_USAGE_NOT_FOUND:
-                    PRINT_ERROR("HidP_GetUsages Failed! The collection does not contain any buttons on the specified "
-                                "usage page in any report of the specified report type.");
-                    break;
-            }
-            return HIDra::GamepadID::InvalidGamepadID;
+            DecodeRawInputReport(report, gamepad->GetVendorID(), gamepad->GetProductID(), outInputReport);
         }
-
-        // Build Windows Gamepad Report
-        HIDra::GamepadReport_Windows inputReport;
-        inputReport.m_heldButtonIDs.resize(usageLength);
-        // TODO: Find a better way to do this
-        // inputReport.m_axes.reserve(gamepad->GetPredictedAxisCount());
-
-        memcpy(inputReport.m_heldButtonIDs.data(), usages, sizeof(HIDra::HIDra_UInt16) * usageLength);
-
-        // Parse Axis Values
-        const HIDra::HIDra_UInt32 valueCapabilitiesCount = windowsData.m_valueCapabilitiesCount;
-        PHIDP_VALUE_CAPS valueCapabilities = static_cast<PHIDP_VALUE_CAPS>(windowsData.m_valueCapabilities);
-
-        for (HIDra::HIDra_UInt32 i = 0; i < valueCapabilitiesCount; i++)
+        else
         {
-            ULONG value = 0;
-            NTSTATUS result = HidP_GetUsageValue(HidP_Input,
-                                                 valueCapabilities[i].UsagePage,
-                                                 0,
-                                                 valueCapabilities[i].NotRange.Usage,
-                                                 &value,
-                                                 preparsedData,
-                                                 (PCHAR)report,
-                                                 reportSize);
-            if (result != HIDP_STATUS_SUCCESS)
+
+            NTSTATUS buttonResult = HidP_GetUsagesEx(HidP_Input,
+                                                     HIDP_LINK_COLLECTION_ROOT,
+                                                     usages,
+                                                     &usageLength,
+                                                     preparsedData,
+                                                     (PCHAR)report,
+                                                     reportSize);
+
+            if (buttonResult != HIDP_STATUS_SUCCESS)
             {
-                continue;
+                switch (buttonResult)
+                {
+                    case HIDP_STATUS_INVALID_REPORT_LENGTH:
+                        PRINT_ERROR("HidP_GetUsages Failed! The report length is not valid.");
+                        break;
+                    case HIDP_STATUS_INVALID_REPORT_TYPE:
+                        PRINT_ERROR("HidP_GetUsages Failed! The specified report type is not valid.");
+                        break;
+                    case HIDP_STATUS_BUFFER_TOO_SMALL:
+                        PRINT_ERROR(
+                          "HidP_GetUsages Failed! The UsageList buffer is too small to hold all the usages that "
+                          "are currently set to ON on the specified usage page.");
+                        break;
+                    case HIDP_STATUS_INCOMPATIBLE_REPORT_ID:
+                        PRINT_ERROR("HidP_GetUsages Failed! The collection contains buttons on the specified usage "
+                                    "page in a report "
+                                    "of the specified type, but there are no such usages in the specified report.");
+                        break;
+                    case HIDP_STATUS_INVALID_PREPARSED_DATA:
+                        PRINT_ERROR("HidP_GetUsages Failed! The preparsed data is not valid.");
+                        break;
+                    case HIDP_STATUS_USAGE_NOT_FOUND:
+                        PRINT_ERROR(
+                          "HidP_GetUsages Failed! The collection does not contain any buttons on the specified "
+                          "usage page in any report of the specified report type.");
+                        break;
+                }
+                return HIDra::GamepadID::InvalidGamepadID;
             }
-            inputReport.m_axes.push_back(HIDra::GamepadReport_Windows::Axis(valueCapabilities[i].NotRange.Usage,
-                                                                            static_cast<HIDra::HIDra_UInt16>(value)));
+
+            // Build Windows Gamepad Report
+            HIDra::GamepadReport_Windows inputReport;
+            inputReport.m_heldButtonIDs.resize(usageLength);
+            // TODO: Find a better way to do this
+            // inputReport.m_axes.reserve(gamepad->GetPredictedAxisCount());
+
+            for (ULONG i = 0; i < usageLength; ++i)
+            {
+                inputReport.m_heldButtonIDs[i] = usages[i].Usage;
+            }
+
+            // Parse Axis Values
+            const HIDra::HIDra_UInt32 valueCapabilitiesCount = windowsData.m_valueCapabilitiesCount;
+            PHIDP_VALUE_CAPS valueCapabilities = static_cast<PHIDP_VALUE_CAPS>(windowsData.m_valueCapabilities);
+
+            for (HIDra::HIDra_UInt32 i = 0; i < valueCapabilitiesCount; ++i)
+            {
+                ULONG value = 0;
+                NTSTATUS result = HidP_GetUsageValue(HidP_Input,
+                                                     valueCapabilities[i].UsagePage,
+                                                     0,
+                                                     valueCapabilities[i].NotRange.Usage,
+                                                     &value,
+                                                     preparsedData,
+                                                     (PCHAR)report,
+                                                     reportSize);
+                if (result != HIDP_STATUS_SUCCESS)
+                {
+                    continue;
+                }
+                inputReport.m_axes.push_back(
+                  HIDra::GamepadReport_Windows::Axis(valueCapabilities[i].NotRange.Usage,
+                                                     static_cast<HIDra::HIDra_UInt16>(value)));
+            }
+
+            inputReport.m_vendorID = gamepad->GetVendorID();
+            inputReport.m_productID = gamepad->GetProductID();
+
+            // Translate to HIDra gamepad report
+            DecodeWindowsReport(inputReport, outInputReport);
         }
-
-        inputReport.m_vendorID = gamepad->GetVendorID();
-        inputReport.m_productID = gamepad->GetProductID();
-
-        // Translate to HIDra gamepad report
-        DecodeWindowsReport(inputReport, outInputReport);
         return gamepad->GetID();
     }
 } // namespace

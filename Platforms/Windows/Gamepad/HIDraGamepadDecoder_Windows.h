@@ -13,6 +13,8 @@ namespace HIDra
     using ValueCapabilitiesPtr = void*;
     using PreparsedDataPtr = void*;
 
+    using Byte = HIDra_UInt8;
+
     struct GamepadReport_Windows
     {
         struct Axis
@@ -34,5 +36,6 @@ namespace HIDra
     };
 
     void DecodeWindowsReport(GamepadReport_Windows const& windowsReport, GamepadInputData& outInputData);
+    void DecodeRawInputReport(Byte const* rawReport, Vendor vendor, Product product, GamepadInputData& outInputData);
 } // namespace HIDra
 #endif // (HIDra_Platform == HIDra_Platform_Windows) && HIDra_Gamepad
