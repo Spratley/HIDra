@@ -269,7 +269,6 @@ namespace HIDra
 
     void Core::PostFlush()
     {
-        // std::cout << "PostFlush";
         EMSCRIPTEN_RESULT sampleGamepadResult = emscripten_sample_gamepad_data();
         if (sampleGamepadResult != EMSCRIPTEN_RESULT_SUCCESS)
         {
@@ -278,20 +277,14 @@ namespace HIDra
             return;
         }
 
-        // std::cout << " Success\n"
-
         GamepadHandler& gamepadHandler = GetGamepadHandler();
         int const numGamepads = emscripten_get_num_gamepads();
         for (int i = 0; i < numGamepads; ++i)
         {
-            // std::cout << "Polling Gamepad " << i << "\n";
             EmscriptenGamepadEvent gamepadStatus;
-            emscripten_get_gamepad_status(i, &gamepadStatus);
-
-            if (!gamepadStatus.connected)
+            EMSCRIPTEN_RESULT result = emscripten_get_gamepad_status(i, &gamepadStatus);
+            if (result != EMSCRIPTEN_RESULT_SUCCESS || !gamepadStatus.connected)
             {
-                // std::cout << "\tNot Connected\n";
-                //  User has disconnected this controller, just ignore it for now
                 continue;
             }
 
