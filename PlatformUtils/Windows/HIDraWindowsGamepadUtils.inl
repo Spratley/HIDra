@@ -80,7 +80,7 @@ namespace
         }
 
         HANDLE hidDeviceHandle = CreateFile((LPCSTR)deviceName,
-                                            0, // GENERIC_READ | GENERIC_WRITE,
+                                            GENERIC_READ | GENERIC_WRITE,
                                             FILE_SHARE_READ | FILE_SHARE_WRITE,
                                             nullptr,
                                             OPEN_EXISTING,
@@ -233,13 +233,13 @@ namespace
 
         PHIDP_PREPARSED_DATA preparsedData = static_cast<PHIDP_PREPARSED_DATA>(windowsData.m_preparsedData);
 
+        /*static int framesSinceLast = 0;
         if (report[0] == 0x30)
         {
             DecodeRawInputReport(report, gamepad->GetVendorID(), gamepad->GetProductID(), outInputReport);
         }
         else
         {
-
             NTSTATUS buttonResult = HidP_GetUsagesEx(HidP_Input,
                                                      HIDP_LINK_COLLECTION_ROOT,
                                                      usages,

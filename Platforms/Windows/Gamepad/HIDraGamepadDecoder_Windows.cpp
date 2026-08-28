@@ -15,9 +15,16 @@ namespace HIDra
 {
     constexpr float uint16ToFloatDivisor = 1.0f / static_cast<float>(0xFFFF);
     constexpr float uint12ToFloatDivisor = 1.0f / static_cast<float>(0x0FFF);
+    constexpr float uint8ToFloatDivisor = 1.0f / static_cast<float>(0x00FF);
+
+    inline float UInt16ToUnsignedNormalizedFloat(HIDra_UInt16 value, float divisor = uint16ToFloatDivisor)
+    {
+        return (static_cast<float>(value) * divisor);
+    }
+
     inline float UInt16ToSignedNormalizedFloat(HIDra_UInt16 value, float divisor = uint16ToFloatDivisor)
     {
-        return (static_cast<float>(value) * divisor) * 2.0f - 1.0f;
+        return UInt16ToUnsignedNormalizedFloat(value, divisor) * 2.0f - 1.0f;
     }
 
     // Nintendo Switch Pro Controller
@@ -182,6 +189,125 @@ namespace HIDra
         }
     } // namespace NSP
 
+    // DualSense (DualShock 5)
+    namespace SONY_DS5
+    {
+        // Hardcoded IDs sent by the Dualsense controller
+        enum class DualsenseInputIDs
+        {
+            Square = 1,
+            Cross = 2,
+            Circle = 3,
+            Triangle = 4,
+
+            BumperL = 5,
+            BumperR = 6,
+
+            TriggerL = 7,
+            TriggerR = 8,
+
+            Share = 9,
+            Options = 10,
+
+            StickL = 11,
+            StickR = 12,
+
+            PlayStation = 13,
+            Touchpad = 14,
+
+            Axis_StickLX = 48,
+            Axis_StickLY = 49,
+            Axis_StickRX = 50,
+            Axis_StickRY = 53,
+
+            Axis_TriggerL = 51,
+            Axis_TriggerR = 52,
+
+            Axis_DPad = 57,
+        };
+
+        void Decode(GamepadReport_Windows const& report, GamepadInputData& outInputData)
+        {
+            GamepadButtonFlags heldButtonFlags = BID_NONE;
+
+            for (HIDra_UInt16 heldButtonID : report.m_heldButtonIDs)
+            {
+                // Map input button IDs to readable gamepad button flags
+                switch (static_cast<DualsenseInputIDs>(heldButtonID))
+                {
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::Square, BID_EAST);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::Cross, BID_SOUTH);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::Circle, BID_WEST);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::Triangle, BID_NORTH);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::BumperL, BID_BUMPER_L);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::BumperR, BID_BUMPER_R);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::Share, BID_MINUS);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::Options, BID_PLUS);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::StickL, BID_STICK_L);
+                    MAP_BUTTON_ID_FLAG(DualsenseInputIDs::StickR, BID_STICK_R);
+                }
+            }
+
+            // Translate and Dispatch Axes
+            Vec2f& stickL = outInputData.m_stickL;
+            Vec2f& stickR = outInputData.m_stickR;
+            for (GamepadReport_Windows::Axis axis : report.m_axes)
+            {
+                switch (static_cast<DualsenseInputIDs>(axis.m_id))
+                {
+                    case DualsenseInputIDs::Axis_StickLX:
+                        stickL.m_x = UInt16ToSignedNormalizedFloat(axis.m_value, uint8ToFloatDivisor);
+                        break;
+                    case DualsenseInputIDs::Axis_StickLY:
+                        // Sticks are read inverted, flip the values on translation
+                        stickL.m_y = -UInt16ToSignedNormalizedFloat(axis.m_value, uint8ToFloatDivisor);
+                        break;
+                    case DualsenseInputIDs::Axis_StickRX:
+                        stickR.m_x = UInt16ToSignedNormalizedFloat(axis.m_value, uint8ToFloatDivisor);
+                        break;
+                    case DualsenseInputIDs::Axis_StickRY:
+                        // Sticks are read inverted, flip the values on translation
+                        stickR.m_y = -UInt16ToSignedNormalizedFloat(axis.m_value, uint8ToFloatDivisor);
+                        break;
+
+                    case DualsenseInputIDs::Axis_TriggerL:
+                        outInputData.m_triggerL = UInt16ToUnsignedNormalizedFloat(axis.m_value, uint8ToFloatDivisor);
+                        break;
+
+                    case DualsenseInputIDs::Axis_TriggerR:
+                        outInputData.m_triggerR = UInt16ToUnsignedNormalizedFloat(axis.m_value, uint8ToFloatDivisor);
+                        break;
+
+                    // Dualsense DPad sends its data as an axis value
+                    // Starting with North = 0, the 8 cardinal directions count up clockwise
+                    // 8 means no button is held
+                    case DualsenseInputIDs::Axis_DPad:
+                        if (axis.m_value == 0 || axis.m_value == 1 || axis.m_value == 7) // Up
+                        {
+                            heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | BID_DPAD_NORTH);
+                        }
+                        else if (axis.m_value == 3 || axis.m_value == 4 || axis.m_value == 5) // Down
+                        {
+                            heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | BID_DPAD_SOUTH);
+                        }
+
+                        if (axis.m_value == 1 || axis.m_value == 2 || axis.m_value == 3) // Right
+                        {
+                            heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | BID_DPAD_EAST);
+                        }
+                        else if (axis.m_value == 5 || axis.m_value == 6 || axis.m_value == 7) // Left
+                        {
+                            heldButtonFlags = static_cast<GamepadButtonFlags>(heldButtonFlags | BID_DPAD_WEST);
+                        }
+                        break;
+                }
+            }
+
+            // Dispatch buttons (Now that we've polled the DPad)
+            outInputData.m_buttonFlags = heldButtonFlags;
+        }
+    } // namespace SONY_DS5
+
     void DecodeWindowsReport(GamepadReport_Windows const& windowsReport, GamepadInputData& outInputData)
     {
         switch (windowsReport.m_vendorID)
@@ -196,8 +322,8 @@ namespace HIDra
                 switch (windowsReport.m_productID)
                 {
                     // TODO: Parse Sony controllers
-                    case 0x00:
-                    default:   break;
+                    case PID_SONY_DUALSENSE: SONY_DS5::Decode(windowsReport, outInputData); return;
+                    default:                 break;
                 }
                 break;
             default: break;

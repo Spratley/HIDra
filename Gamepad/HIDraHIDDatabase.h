@@ -14,5 +14,6 @@ namespace HIDra
     // Sony
     constexpr Vendor VID_SONY = 0x054C;
     constexpr Product PID_SONY_DUALSHOCK_4 = 0x09CC;
+    constexpr Product PID_SONY_DUALSENSE = 0x0CE6;
 }
 #endif // HIDra_Gamepad
