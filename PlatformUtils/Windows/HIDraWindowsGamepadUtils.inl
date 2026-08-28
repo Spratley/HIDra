@@ -233,7 +233,6 @@ namespace
 
         PHIDP_PREPARSED_DATA preparsedData = static_cast<PHIDP_PREPARSED_DATA>(windowsData.m_preparsedData);
 
-        /*static int framesSinceLast = 0;
         if (report[0] == 0x30)
         {
             DecodeRawInputReport(report, gamepad->GetVendorID(), gamepad->GetProductID(), outInputReport);
